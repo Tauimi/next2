@@ -328,7 +328,7 @@ export default function ComparePage() {
                                     >
                                       <Heart className="w-4 h-4 mr-2" />
                                       В избранное
-                                    </Button>
+                      </Button>
                     </div>
                 </div>
                               </th>
