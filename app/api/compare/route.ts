@@ -48,14 +48,14 @@ export async function GET(request: NextRequest) {
     // Группируем характеристики для удобства сравнения
     const groupedSpecs: Record<string, any[]> = {}
     
-    compareItems.forEach(item => {
-      item.product.specifications.forEach(spec => {
+    compareItems.forEach((item: any) => {
+      item.product.specifications.forEach((spec: any) => {
         const groupName = spec.groupName || 'Основные характеристики'
         if (!groupedSpecs[groupName]) {
           groupedSpecs[groupName] = []
         }
         
-        const existingSpec = groupedSpecs[groupName].find(s => s.name === spec.name)
+        const existingSpec = groupedSpecs[groupName].find((s: any) => s.name === spec.name)
         if (!existingSpec) {
           groupedSpecs[groupName].push({
             name: spec.name,

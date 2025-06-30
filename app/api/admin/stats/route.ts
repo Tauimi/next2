@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
 
     // Получаем данные о топ товарах
     const topProductsData = await Promise.all(
-      topProducts.map(async (item) => {
+      topProducts.map(async (item: { productId: string; _sum: { quantity: number | null }; _count: { productId: number } }) => {
         const product = await prisma.product.findUnique({
           where: { id: item.productId },
           select: { name: true, price: true }
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         totalUsers,
         totalRevenue: totalRevenue._sum.totalAmount || 0
       },
-      recentOrders: recentOrders.map(order => ({
+      recentOrders: recentOrders.map((order: any) => ({
         id: order.id,
         orderNumber: order.orderNumber,
         customerName: order.customerName,

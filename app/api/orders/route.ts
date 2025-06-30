@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Подсчет суммы заказа
-    const subtotal = cartItems.reduce((sum, item) => {
+    const subtotal = cartItems.reduce((sum: number, item: any) => {
       return sum + (item.product.price * item.quantity)
     }, 0)
 
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
     const orderNumber = `ORD-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
 
     // Создание заказа в транзакции
-    const order = await prisma.$transaction(async (tx) => {
+    const order = await prisma.$transaction(async (tx: any) => {
       // Создаем заказ
       const newOrder = await tx.order.create({
         data: {
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
 
       // Создаем элементы заказа
       const orderItems = await Promise.all(
-        cartItems.map(item =>
+        cartItems.map((item: any) =>
           tx.orderItem.create({
             data: {
               orderId: newOrder.id,
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
 
       // Обновляем количество товаров на складе
       await Promise.all(
-        cartItems.map(item =>
+        cartItems.map((item: any) =>
           tx.product.update({
             where: { id: item.productId },
             data: {

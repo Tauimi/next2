@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
     })
 
     // Подсчет общей суммы
-    const totalAmount = cartItems.reduce((sum, item) => {
+    const totalAmount = cartItems.reduce((sum: number, item: any) => {
       return sum + (item.product.price * item.quantity)
     }, 0)
 
-    const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
+    const totalItems = cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0)
 
     return NextResponse.json({
       success: true,
