@@ -198,8 +198,8 @@ export default function ComparePage() {
         <>
           {/* Controls */}
           <section className="py-8 bg-white border-b">
-            <div className="container mx-auto px-4">
-              <div className="max-w-7xl mx-auto">
+        <div className="container mx-auto px-4">
+          <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-medium">
@@ -227,7 +227,7 @@ export default function ComparePage() {
                     <Button variant="outline" size="sm" onClick={handleClearCompare}>
                       <Trash2 className="w-4 h-4 mr-2" />
                       Очистить сравнение
-                    </Button>
+              </Button>
                   </div>
                 </div>
               </div>
@@ -239,9 +239,9 @@ export default function ComparePage() {
             <div className="container mx-auto px-4">
               <div className="max-w-7xl mx-auto">
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                  <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
                     <table className="w-full">
-                      {/* Product Headers */}
+                {/* Product Headers */}
                       <thead>
                         <tr className="border-b">
                           <th className="text-left p-6 w-48 bg-gray-50">
@@ -260,8 +260,8 @@ export default function ComparePage() {
                                   onClick={() => handleRemoveFromCompare(product.id)}
                                 >
                                   <XIcon className="w-4 h-4" />
-                                </button>
-
+                      </button>
+                      
                                 {/* Product Image */}
                                 <Link href={`/product/${product.slug}`}>
                                   <div className="w-32 h-32 mx-auto mb-4 overflow-hidden rounded-lg bg-gray-100">
@@ -301,13 +301,13 @@ export default function ComparePage() {
                                   <div className="space-y-1">
                                     <div className="font-bold text-lg text-blue-600">
                                       {formatPrice(product.price)}
-                                    </div>
+                        </div>
                                     {hasDiscount && (
                                       <div className="text-sm text-gray-500 line-through">
                                         {formatPrice(product.originalPrice!)}
-                                      </div>
-                                    )}
-                                  </div>
+                          </div>
+                        )}
+                      </div>
 
                                   {/* Actions */}
                                   <div className="space-y-2 pt-2">
@@ -318,8 +318,8 @@ export default function ComparePage() {
                                       onClick={() => handleAddToCart(product.id)}
                                     >
                                       <ShoppingCart className="w-4 h-4 mr-2" />
-                                      В корзину
-                                    </Button>
+                        В корзину
+                      </Button>
                                     <Button
                                       size="sm"
                                       variant="outline"
@@ -329,8 +329,8 @@ export default function ComparePage() {
                                       <Heart className="w-4 h-4 mr-2" />
                                       В избранное
                                     </Button>
-                                  </div>
-                                </div>
+                    </div>
+                </div>
                               </th>
                             )
                           })}
@@ -354,8 +354,8 @@ export default function ComparePage() {
                               const values = Object.values(spec.values)
                               const uniqueValues = new Set(values)
                               const hasDifferences = uniqueValues.size > 1
-
-                              return (
+                        
+                        return (
                                 <tr 
                                   key={`${groupName}-${spec.name}-${index}`}
                                   className={`border-b ${hasDifferences ? 'bg-yellow-50' : ''}`}
@@ -372,7 +372,7 @@ export default function ComparePage() {
                                     <td key={item.id} className="p-4 text-center">
                                       <span className={hasDifferences ? 'font-medium' : ''}>
                                         {spec.values[item.productId] || '—'}
-                                      </span>
+                                </span>
                                     </td>
                                   ))}
                                 </tr>
@@ -382,7 +382,7 @@ export default function ComparePage() {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                    </div>
                 </div>
               </div>
             </div>
@@ -409,15 +409,15 @@ export default function ComparePage() {
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4" />
                     <span>Одна категория</span>
-                  </div>
+                    </div>
                 </div>
                 <Button size="lg" asChild>
                   <Link href="/catalog">Перейти в каталог</Link>
                 </Button>
-              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
       )}
 
       {/* Info Section */}
