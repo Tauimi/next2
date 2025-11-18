@@ -15,7 +15,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma db push --force-reset",
     "db:seed": "curl -X POST https://your-app.vercel.app/api/force-init",
-    "postinstall": "npx prisma generate",
+    "postinstall": "PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 npx prisma generate",
     "vercel-build": "prisma generate && next build",
     "check-deploy": "node scripts/check-deploy.js",
     "pre-deploy": "npm run check-deploy && npm run build",
