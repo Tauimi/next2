@@ -72,14 +72,14 @@ export default function AdminPage() {
       value: stats.orders,
       icon: BarChart3,
       color: 'bg-purple-500',
-      href: '#'
+      href: '/admin/orders'
     },
     {
       title: 'Пользователи',
       value: stats.users,
       icon: Users,
       color: 'bg-orange-500',
-      href: '#'
+      href: '/admin/users'
     }
   ]
 
