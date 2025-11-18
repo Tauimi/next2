@@ -114,6 +114,7 @@ export interface ProductCardData {
   }>
   category?: {
     name: string
+    slug?: string
   }
   brand?: {
     name: string
