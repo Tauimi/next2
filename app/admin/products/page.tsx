@@ -61,9 +61,19 @@ export default function AdminProductsPage() {
 
   const toggleProductStatus = async (productId: number, currentStatus: boolean) => {
     try {
-      // TODO: Создать API endpoint для обновления статуса товара
-      console.log(`Toggle product ${productId} status from ${currentStatus} to ${!currentStatus}`)
-      // После успешного обновления, обновляем локальное состояние
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentStatus })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update status')
+      }
+
+      // Обновляем локальное состояние
       setProducts(prev => prev.map(product => 
         product.id === productId 
           ? { ...product, isActive: !currentStatus }
@@ -71,6 +81,32 @@ export default function AdminProductsPage() {
       ))
     } catch (error) {
       console.error('Error updating product status:', error)
+      alert(error instanceof Error ? error.message : 'Ошибка обновления статуса')
+    }
+  }
+
+  const deleteProduct = async (productId: number, productName: string) => {
+    if (!confirm(`Вы уверены, что хотите удалить товар "${productName}"?\n\nЭто действие нельзя отменить.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE'
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete product')
+      }
+
+      // Удаляем из локального состояния
+      setProducts(prev => prev.filter(product => product.id !== productId))
+      alert('Товар успешно удалён')
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      alert(error instanceof Error ? error.message : 'Ошибка удаления товара')
     }
   }
 
@@ -231,23 +267,16 @@ export default function AdminProductsPage() {
                               <Eye className="w-4 h-4" />
                             </Button>
                           </Link>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            title="Редактировать"
-                            onClick={() => alert('Функция редактирования в разработке')}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
+                          <Link href={`/admin/products/${product.id}/edit`}>
+                            <Button size="sm" variant="outline" title="Редактировать">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </Link>
                           <Button 
                             size="sm" 
                             variant="outline" 
                             title="Удалить"
-                            onClick={() => {
-                              if (confirm(`Удалить товар "${product.name}"?`)) {
-                                alert('Функция удаления в разработке')
-                              }
-                            }}
+                            onClick={() => deleteProduct(product.id, product.name)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>

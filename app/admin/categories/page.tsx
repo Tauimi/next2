@@ -42,8 +42,18 @@ export default function AdminCategoriesPage() {
 
   const toggleCategoryStatus = async (categoryId: number, currentStatus: boolean) => {
     try {
-      // TODO: Создать API endpoint для обновления статуса категории
-      console.log(`Toggle category ${categoryId} status from ${currentStatus} to ${!currentStatus}`)
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentStatus })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update status')
+      }
+
       setCategories(prev => prev.map(category => 
         category.id === categoryId 
           ? { ...category, isActive: !currentStatus }
@@ -51,6 +61,32 @@ export default function AdminCategoriesPage() {
       ))
     } catch (error) {
       console.error('Error updating category status:', error)
+      alert(error instanceof Error ? error.message : 'Ошибка обновления статуса')
+    }
+  }
+
+  const deleteCategory = async (categoryId: number, categoryName: string) => {
+    if (!confirm(`Вы уверены, что хотите удалить категорию "${categoryName}"?\n\nЭто действие нельзя отменить.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'DELETE'
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete category')
+      }
+
+      // Удаляем из локального состояния
+      setCategories(prev => prev.filter(category => category.id !== categoryId))
+      alert('Категория успешно удалена')
+    } catch (error) {
+      console.error('Error deleting category:', error)
+      alert(error instanceof Error ? error.message : 'Ошибка удаления категории')
     }
   }
 
@@ -149,21 +185,15 @@ export default function AdminCategoriesPage() {
                     Просмотр
                   </Button>
                 </Link>
+                <Link href={`/admin/categories/${category.id}/edit`}>
+                  <Button size="sm" variant="outline">
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                </Link>
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => alert('Функция редактирования в разработке')}
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => {
-                    if (confirm(`Удалить категорию "${category.name}"?`)) {
-                      alert('Функция удаления в разработке')
-                    }
-                  }}
+                  onClick={() => deleteCategory(category.id, category.name)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
