@@ -1,0 +1,31 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: NextRequest) {
+  try {
+    // Создаем ответ
+    const response = NextResponse.json({
+      success: true,
+      message: 'Выход выполнен успешно'
+    })
+
+    // Удаляем cookie с токеном
+    response.cookies.set('auth-token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0, // Удаляем cookie
+      path: '/',
+    })
+
+    return response
+
+  } catch (error) {
+    console.error('Logout error:', error)
+    return NextResponse.json(
+      { error: 'Ошибка при выходе из системы' },
+      { status: 500 }
+    )
+  }
+} 

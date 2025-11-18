@@ -1,0 +1,554 @@
+// Схема базы данных для TechnoMart
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Модель пользователя
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  firstName String?
+  lastName  String?
+  phone     String?
+  address   String?
+  isAdmin   Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
+  cartItems      CartItem[]
+  wishlistItems  WishlistItem[]
+  compareItems   CompareItem[]
+  orders         Order[]
+  reviews        Review[]
+  newsArticles   NewsArticle[]
+  articles       Article[]
+  contactMessages ContactMessage[]
+
+  @@map("users")
+}
+
+// Модель категории товаров
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  parentId    String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Связи
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  products Product[]
+
+  @@map("categories")
+}
+
+// Модель бренда
+model Brand {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  logo        String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Связи
+  products Product[]
+
+  @@map("brands")
+}
+
+// Модель товара
+model Product {
+  id               String  @id @default(cuid())
+  name             String
+  slug             String  @unique
+  description      String
+  shortDescription String?
+  sku              String  @unique
+  price            Float
+  originalPrice    Float?
+  discount         Float?  @default(0)
+  inStock          Boolean @default(true)
+  stockQuantity    Int     @default(0)
+  minQuantity      Int     @default(1)
+
+  // Связи
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  brandId    String?
+  brand      Brand?   @relation(fields: [brandId], references: [id])
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  keywords        String[]
+
+  // Статусы
+  isActive    Boolean @default(true)
+  isFeatured  Boolean @default(false)
+  isNew       Boolean @default(false)
+  isHot       Boolean @default(false)
+
+  // Рейтинг
+  averageRating Float @default(0)
+  totalReviews  Int   @default(0)
+
+  // Даты
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
+  images          ProductImage[]
+  videos          ProductVideo[]
+  specifications  ProductSpecification[]
+  reviews         Review[]
+  cartItems       CartItem[]
+  wishlistItems   WishlistItem[]
+  compareItems    CompareItem[]
+  orderItems      OrderItem[]
+  relatedProducts ProductRelation[] @relation("RelatedFromProduct")
+  relatedTo       ProductRelation[] @relation("RelatedToProduct")
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([inStock])
+  @@index([createdAt])
+  @@index([price])
+  @@index([averageRating])
+  @@map("products")
+}
+
+// Модель изображений товара
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  alt       String
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  // Связи
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+// Модель видео товара
+model ProductVideo {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  title     String
+  thumbnail String?
+  sortOrder Int     @default(0)
+
+  // Связи
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_videos")
+}
+
+// Модель характеристик товара
+model ProductSpecification {
+  id        String  @id @default(cuid())
+  productId String
+  name      String
+  value     String
+  unit      String?
+  groupName String?
+  sortOrder Int     @default(0)
+
+  // Связи
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_specifications")
+}
+
+// Модель связанных товаров
+model ProductRelation {
+  id              String @id @default(cuid())
+  fromProductId   String
+  toProductId     String
+  relationType    String // "related", "cross-sell", "up-sell"
+
+  // Связи
+  fromProduct Product @relation("RelatedFromProduct", fields: [fromProductId], references: [id], onDelete: Cascade)
+  toProduct   Product @relation("RelatedToProduct", fields: [toProductId], references: [id], onDelete: Cascade)
+
+  @@unique([fromProductId, toProductId, relationType])
+  @@map("product_relations")
+}
+
+// Модель отзыва
+model Review {
+  id                 String    @id @default(cuid())
+  productId          String
+  userId             String?
+  username           String
+  email              String?
+  rating             Int
+  title              String?
+  content            String
+  pros               String?
+  cons               String?
+  isVerifiedPurchase Boolean   @default(false)
+  isApproved         Boolean   @default(true)
+  isFeatured         Boolean   @default(false)
+  helpfulCount       Int       @default(0)
+  notHelpfulCount    Int       @default(0)
+  adminResponse      String?
+  adminResponseDate  DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Связи
+  product Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?        @relation(fields: [userId], references: [id])
+  images  ReviewImage[]
+
+  @@map("reviews")
+}
+
+// Модель изображений отзыва
+model ReviewImage {
+  id       String @id @default(cuid())
+  reviewId String
+  url      String
+  alt      String
+
+  // Связи
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@map("review_images")
+}
+
+// Модель элемента корзины
+model CartItem {
+  id        String  @id @default(cuid())
+  userId    String?
+  sessionId String?
+  productId String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
+  user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, productId])
+  @@unique([sessionId, productId])
+  @@index([userId])
+  @@index([sessionId])
+  @@map("cart_items")
+}
+
+// Модель элемента избранного
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+// Модель элемента сравнения
+model CompareItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("compare_items")
+}
+
+// Модель заказа
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  userId          String?
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  shippingAddress Json
+  billingAddress  Json?
+  subtotal        Float
+  shippingCost    Float         @default(0)
+  tax             Float         @default(0)
+  discount        Float         @default(0)
+  totalAmount     Float
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  notes           String?
+  trackingNumber  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+
+  // Связи
+  user  User?       @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([orderNumber])
+  @@map("orders")
+}
+
+// Модель элемента заказа
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  productId  String
+  quantity   Int
+  price      Float
+  totalPrice Float
+
+  // Связи
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("order_items")
+}
+
+// Перечисления для заказов
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// === КОРПОРАТИВНЫЕ СТРАНИЦЫ ===
+
+// Модель новости
+model NewsArticle {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String
+  content     String
+  image       String?
+  authorId    String?
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  views       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Связи
+  author User?     @relation(fields: [authorId], references: [id])
+  tags   NewsTag[]
+
+  @@map("news_articles")
+}
+
+// Модель тега новости
+model NewsTag {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Связи
+  articles NewsArticle[]
+
+  @@map("news_tags")
+}
+
+// Модель проекта
+model Project {
+  id             String         @id @default(cuid())
+  title          String
+  slug           String         @unique
+  description    String
+  content        String
+  image          String?
+  clientName     String?
+  completionDate DateTime?
+  status         ProjectStatus  @default(PERSPECTIVE)
+  category       String?
+  technologies   String[]
+  isPublished    Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Связи
+  gallery ProjectImage[]
+
+  @@map("projects")
+}
+
+// Модель изображений проекта
+model ProjectImage {
+  id        String @id @default(cuid())
+  projectId String
+  url       String
+  alt       String
+  sortOrder Int    @default(0)
+
+  // Связи
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_images")
+}
+
+enum ProjectStatus {
+  PERSPECTIVE
+  COMPLETED
+}
+
+// Модель клиента
+model Client {
+  id          String @id @default(cuid())
+  name        String
+  logo        String?
+  website     String?
+  description String?
+  isPartner   Boolean @default(false)
+  sortOrder   Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Связи
+  testimonials Testimonial[]
+
+  @@map("clients")
+}
+
+// Модель отзыва клиента
+model Testimonial {
+  id             String  @id @default(cuid())
+  clientId       String?
+  clientName     String
+  clientPosition String?
+  clientCompany  String?
+  content        String
+  rating         Int?
+  avatar         String?
+  isPublished    Boolean @default(false)
+  isFeatured     Boolean @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Связи
+  client Client? @relation(fields: [clientId], references: [id])
+
+  @@map("testimonials")
+}
+
+// Модель FAQ
+model FAQ {
+  id          String  @id @default(cuid())
+  question    String
+  answer      String
+  category    String?
+  sortOrder   Int     @default(0)
+  isPublished Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+// Модель статьи
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String
+  image       String?
+  category    String?
+  tags        String[]
+  authorId    String?
+  isPublished Boolean  @default(false)
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Связи
+  author User? @relation(fields: [authorId], references: [id])
+
+  @@map("articles")
+}
+
+// Модель сообщения обратной связи
+model ContactMessage {
+  id        String  @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean @default(false)
+  isReplied Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи (если сообщение от зарегистрированного пользователя)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@map("contact_messages")
+}
+
+// Модель посетителя (аналитика)
+model Visitor {
+  id          String   @id @default(cuid())
+  ipAddress   String
+  userAgent   String?
+  pageVisited String
+  referrer    String?
+  country     String?
+  city        String?
+  createdAt   DateTime @default(now())
+
+  @@map("visitors")
+} 
