@@ -28,6 +28,9 @@ export interface Category {
   sortOrder: number
   createdAt: Date
   updatedAt: Date
+  _count?: {
+    products?: number
+  }
 }
 
 export interface Brand {
