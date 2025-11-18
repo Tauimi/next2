@@ -4,65 +4,56 @@ import { requireAdmin } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
-// GET /api/admin/orders - Получение списка заказов
+// GET /api/admin/users - Получение списка пользователей
 export async function GET(request: NextRequest) {
   try {
     await requireAdmin(request)
 
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
+    const search = searchParams.get('search') || ''
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
 
     const where: any = {}
-    if (status && status !== 'all') {
-      where.status = status
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+      ]
     }
 
-    const [orders, total] = await Promise.all([
-      prisma.order.findMany({
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          user: {
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          isAdmin: true,
+          isActive: true,
+          createdAt: true,
+          _count: {
             select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-            }
-          },
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  price: true,
-                  images: {
-                    where: { isPrimary: true },
-                    take: 1,
-                    select: {
-                      url: true,
-                      alt: true,
-                    }
-                  }
-                }
-              }
+              orders: true,
             }
           }
         }
       }),
-      prisma.order.count({ where })
+      prisma.user.count({ where })
     ])
 
     return NextResponse.json({
       success: true,
-      data: orders,
+      data: users,
       pagination: {
         page,
         limit,
@@ -72,7 +63,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Get orders error:', error)
+    console.error('Get users error:', error)
     
     if (error instanceof Error && error.message.includes('Access denied')) {
       return NextResponse.json(
@@ -82,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch orders' },
+      { success: false, error: 'Failed to fetch users' },
       { status: 500 }
     )
   }
