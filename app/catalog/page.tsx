@@ -23,6 +23,13 @@ export default function CatalogPage() {
 
   useEffect(() => {
     loadData()
+    
+    // Получаем категорию из URL
+    const params = new URLSearchParams(window.location.search)
+    const categorySlug = params.get('category')
+    if (categorySlug) {
+      setSelectedCategory(categorySlug)
+    }
   }, [])
 
   const loadData = async () => {
@@ -52,7 +59,9 @@ export default function CatalogPage() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = !selectedCategory || product.category?.name === selectedCategory
+    const matchesCategory = !selectedCategory || 
+      product.category?.name === selectedCategory || 
+      product.category?.slug === selectedCategory
     const matchesBrand = !selectedBrand || product.brand?.name === selectedBrand
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
     
@@ -129,8 +138,8 @@ export default function CatalogPage() {
               >
                 <option value="">Все категории</option>
                 {categories.map(category => (
-                  <option key={category.id} value={category.name}>
-                    {category.name}
+                  <option key={category.id} value={category.slug}>
+                    {category.name} ({category._count?.products || 0})
                   </option>
                 ))}
               </select>

@@ -20,56 +20,14 @@ import QuickAddProduct from '@/components/QuickAddProduct'
 import { formatDate, fetchProducts } from '@/lib/utils'
 import { ProductCardData } from '@/types'
 
-const categories = [
-  {
-    id: '1',
-    name: 'Смартфоны',
-    slug: 'smartphones',
-    icon: '📱',
-    count: 156,
-    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&h=200&fit=crop&crop=center'
-  },
-  {
-    id: '2',
-    name: 'Ноутбуки',
-    slug: 'laptops',
-    icon: '💻',
-    count: 89,
-    image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop&crop=center'
-  },
-  {
-    id: '3',
-    name: 'Телевизоры',
-    slug: 'tvs',
-    icon: '📺',
-    count: 67,
-    image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&h=200&fit=crop&crop=center'
-  },
-  {
-    id: '4',
-    name: 'Планшеты',
-    slug: 'tablets',
-    icon: '📱',
-    count: 45,
-    image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200&h=200&fit=crop&crop=center'
-  },
-  {
-    id: '5',
-    name: 'Аксессуары',
-    slug: 'accessories',
-    icon: '🎧',
-    count: 234,
-    image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=200&h=200&fit=crop&crop=center'
-  },
-  {
-    id: '6',
-    name: 'Игры',
-    slug: 'gaming',
-    icon: '🎮',
-    count: 78,
-    image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=200&h=200&fit=crop&crop=center'
-  }
-]
+const categoryIcons: Record<string, string> = {
+  'smartphones': '📱',
+  'laptops': '💻',
+  'tvs': '📺',
+  'tablets': '📱',
+  'accessories': '🎧',
+  'gaming': '🎮',
+}
 
 const news = [
   {
@@ -121,22 +79,35 @@ export default function HomePage() {
   const [isPlaying, setIsPlaying] = useState(true)
   const [featuredProducts, setFeaturedProducts] = useState<ProductCardData[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
+  const [categories, setCategories] = useState<any[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(true)
 
 
-  // Загрузка товаров
+  // Загрузка данных
   useEffect(() => {
-    const loadFeaturedProducts = async () => {
+    const loadData = async () => {
       try {
+        // Загружаем товары
         const products = await fetchProducts({ limit: 4 })
         setFeaturedProducts(products)
+        
+        // Загружаем категории
+        const categoriesRes = await fetch('/api/categories')
+        if (categoriesRes.ok) {
+          const categoriesData = await categoriesRes.json()
+          if (categoriesData.success) {
+            setCategories(categoriesData.data)
+          }
+        }
       } catch (error) {
-        console.error('Failed to load featured products:', error)
+        console.error('Failed to load data:', error)
       } finally {
         setLoadingProducts(false)
+        setLoadingCategories(false)
       }
     }
     
-    loadFeaturedProducts()
+    loadData()
   }, [])
 
   // Автопрокрутка слайдера
@@ -263,31 +234,43 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((category, index) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-              >
-                <Link
-                  href={`/catalog/${category.slug}`}
-                  className="group block p-6 bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border text-center"
+          {loadingCategories ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="p-6 bg-white rounded-xl shadow-sm border animate-pulse">
+                  <div className="w-12 h-12 bg-muted rounded-full mx-auto mb-3"></div>
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-2/3 mx-auto"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+              {categories.map((category, index) => (
+                <motion.div
+                  key={category.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -5 }}
                 >
-                  <div className="text-4xl mb-3">{category.icon}</div>
-                  <h3 className="font-medium mb-1 group-hover:text-primary transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {category.count} товаров
-                  </p>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                  <Link
+                    href={`/catalog?category=${category.slug}`}
+                    className="group block p-6 bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border text-center"
+                  >
+                    <div className="text-4xl mb-3">{categoryIcons[category.slug] || '📦'}</div>
+                    <h3 className="font-medium mb-1 group-hover:text-primary transition-colors">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {category._count?.products || 0} товаров
+                    </p>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
