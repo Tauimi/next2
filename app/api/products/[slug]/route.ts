@@ -122,8 +122,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 } 
 
-//
- PUT /api/products/[slug] - Обновление товара (только для админов, использует ID)
+// PUT /api/products/[slug] - Обновление товара (только для админов, использует ID)
 export async function PUT(
   request: NextRequest,
   { params }: RouteParams
