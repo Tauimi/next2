@@ -287,7 +287,7 @@ export default function CheckoutPage() {
                   <button
                     onClick={() => setCurrentStep(2)}
                     disabled={!formData.customerName || !formData.customerEmail || !formData.customerPhone}
-                    className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Далее
                   </button>
@@ -359,14 +359,14 @@ export default function CheckoutPage() {
                 <div className="flex justify-between mt-6">
                   <button
                     onClick={() => setCurrentStep(1)}
-                    className="border border-input px-6 py-3 rounded-lg hover:bg-muted transition-colors"
+                    className="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     Назад
                   </button>
                   <button
                     onClick={() => setCurrentStep(3)}
                     disabled={!formData.shippingAddress.street || !formData.shippingAddress.city || !formData.shippingAddress.zipCode}
-                    className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Далее
                   </button>
@@ -406,14 +406,14 @@ export default function CheckoutPage() {
                 <div className="flex justify-between mt-6">
                   <button
                     onClick={() => setCurrentStep(2)}
-                    className="border border-input px-6 py-3 rounded-lg hover:bg-muted transition-colors"
+                    className="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     Назад
                   </button>
                   <button
                     onClick={createOrder}
                     disabled={loading}
-                    className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {loading && <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
                     {loading ? 'Оформление...' : 'Оформить заказ'}
@@ -435,13 +435,13 @@ export default function CheckoutPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button
                     onClick={() => router.push('/orders')}
-                    className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+                    className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     Мои заказы
                   </button>
                   <button
                     onClick={() => router.push('/catalog')}
-                    className="border border-input px-6 py-3 rounded-lg hover:bg-muted transition-colors"
+                    className="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     Продолжить покупки
                   </button>
