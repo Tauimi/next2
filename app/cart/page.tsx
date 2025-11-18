@@ -186,10 +186,10 @@ export default function CartPage() {
             </div>
 
             <div className="space-y-3">
-              <button className="btn-primary w-full">
+              <Link href="/checkout" className="btn-primary w-full flex items-center justify-center">
                 Оформить заказ
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </button>
+              </Link>
               
               <Link href="/catalog" className="btn-secondary w-full text-center block">
                 Продолжить покупки
