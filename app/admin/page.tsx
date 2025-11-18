@@ -72,14 +72,14 @@ export default function AdminPage() {
       value: stats.orders,
       icon: BarChart3,
       color: 'bg-purple-500',
-      href: '/admin/orders'
+      href: '#'
     },
     {
       title: 'Пользователи',
       value: stats.users,
       icon: Users,
       color: 'bg-orange-500',
-      href: '/admin/users'
+      href: '#'
     }
   ]
 
@@ -171,9 +171,12 @@ export default function AdminPage() {
               <Link href="/admin/products/create" className="block text-sm text-muted-foreground hover:text-primary">
                 Добавить товар
               </Link>
-              <Link href="/admin/products/import" className="block text-sm text-muted-foreground hover:text-primary">
+              <button 
+                onClick={() => alert('Функция импорта в разработке')}
+                className="block text-sm text-muted-foreground hover:text-primary text-left w-full"
+              >
                 Импорт товаров
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -189,9 +192,12 @@ export default function AdminPage() {
               <Link href="/admin/categories/create" className="block text-sm text-muted-foreground hover:text-primary">
                 Добавить категорию
               </Link>
-              <Link href="/admin/categories/tree" className="block text-sm text-muted-foreground hover:text-primary">
+              <button 
+                onClick={() => alert('Функция структуры категорий в разработке')}
+                className="block text-sm text-muted-foreground hover:text-primary text-left w-full"
+              >
                 Структура категорий
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -201,15 +207,31 @@ export default function AdminPage() {
               Система
             </h3>
             <div className="space-y-2">
-              <Link href="/api/setup-db" className="block text-sm text-muted-foreground hover:text-primary">
-                Инициализация БД
+              <button 
+                onClick={async () => {
+                  if (confirm('Создать базовые категории?')) {
+                    try {
+                      const res = await fetch('/api/init-categories', { method: 'POST' })
+                      const data = await res.json()
+                      alert(data.success ? `Создано категорий: ${data.data.length}` : 'Ошибка создания категорий')
+                    } catch (error) {
+                      alert('Ошибка при создании категорий')
+                    }
+                  }
+                }}
+                className="block text-sm text-muted-foreground hover:text-primary text-left w-full"
+              >
+                Создать базовые категории
+              </button>
+              <Link href="/api/debug" className="block text-sm text-muted-foreground hover:text-primary">
+                Проверка системы
               </Link>
-              <Link href="/api/force-init" className="block text-sm text-muted-foreground hover:text-primary">
-                Принудительная инициализация
-              </Link>
-              <Link href="/admin/backup" className="block text-sm text-muted-foreground hover:text-primary">
+              <button 
+                onClick={() => alert('Функция резервного копирования в разработке')}
+                className="block text-sm text-muted-foreground hover:text-primary text-left w-full"
+              >
                 Резервное копирование
-              </Link>
+              </button>
             </div>
           </div>
         </div>

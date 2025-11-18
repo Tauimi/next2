@@ -231,10 +231,24 @@ export default function AdminProductsPage() {
                               <Eye className="w-4 h-4" />
                             </Button>
                           </Link>
-                          <Button size="sm" variant="outline" title="Редактировать">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            title="Редактировать"
+                            onClick={() => alert('Функция редактирования в разработке')}
+                          >
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="outline" title="Удалить">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            title="Удалить"
+                            onClick={() => {
+                              if (confirm(`Удалить товар "${product.name}"?`)) {
+                                alert('Функция удаления в разработке')
+                              }
+                            }}
+                          >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>

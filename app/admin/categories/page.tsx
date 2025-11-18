@@ -149,10 +149,22 @@ export default function AdminCategoriesPage() {
                     Просмотр
                   </Button>
                 </Link>
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => alert('Функция редактирования в разработке')}
+                >
                   <Edit className="w-4 h-4" />
                 </Button>
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => {
+                    if (confirm(`Удалить категорию "${category.name}"?`)) {
+                      alert('Функция удаления в разработке')
+                    }
+                  }}
+                >
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
