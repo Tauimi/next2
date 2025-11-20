@@ -61,18 +61,76 @@ export async function DELETE(request: NextRequest) {
     const categoryId = searchParams.get('categoryId')
 
     if (productId) {
-      // Удалить один товар
+      // Сначала удаляем все связанные записи
+      console.log('Deleting product and related records:', productId)
+      
+      // Удаляем из корзин
+      const cartDeleted = await prisma.cartItem.deleteMany({
+        where: { productId }
+      })
+      console.log('Deleted from carts:', cartDeleted.count)
+
+      // Удаляем из избранного
+      const wishlistDeleted = await prisma.wishlistItem.deleteMany({
+        where: { productId }
+      })
+      console.log('Deleted from wishlists:', wishlistDeleted.count)
+
+      // Удаляем из сравнения
+      const compareDeleted = await prisma.compareItem.deleteMany({
+        where: { productId }
+      })
+      console.log('Deleted from compare:', compareDeleted.count)
+
+      // Удаляем отзывы (каскадно удалятся изображения отзывов)
+      const reviewsDeleted = await prisma.review.deleteMany({
+        where: { productId }
+      })
+      console.log('Deleted reviews:', reviewsDeleted.count)
+
+      // Теперь можно удалить товар (изображения, видео, характеристики удалятся каскадно)
       await prisma.product.delete({
         where: { id: productId }
       })
 
       return NextResponse.json({
         success: true,
-        message: 'Product deleted',
-        deletedId: productId
+        message: 'Product deleted with all related data',
+        deletedId: productId,
+        relatedDeleted: {
+          cartItems: cartDeleted.count,
+          wishlistItems: wishlistDeleted.count,
+          compareItems: compareDeleted.count,
+          reviews: reviewsDeleted.count
+        }
       })
     } else if (categoryId) {
-      // Удалить все товары в категории
+      // Получаем все товары в категории
+      const products = await prisma.product.findMany({
+        where: { categoryId },
+        select: { id: true }
+      })
+
+      const productIds = products.map(p => p.id)
+
+      // Удаляем все связанные записи
+      await prisma.cartItem.deleteMany({
+        where: { productId: { in: productIds } }
+      })
+
+      await prisma.wishlistItem.deleteMany({
+        where: { productId: { in: productIds } }
+      })
+
+      await prisma.compareItem.deleteMany({
+        where: { productId: { in: productIds } }
+      })
+
+      await prisma.review.deleteMany({
+        where: { productId: { in: productIds } }
+      })
+
+      // Удаляем все товары
       const result = await prisma.product.deleteMany({
         where: { categoryId }
       })
@@ -91,6 +149,19 @@ export async function DELETE(request: NextRequest) {
 
   } catch (error) {
     console.error('Delete product error:', error)
+    
+    // Более подробная информация об ошибке
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Failed to delete product',
+          details: error.message 
+        },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json(
       { success: false, error: 'Failed to delete product' },
       { status: 500 }

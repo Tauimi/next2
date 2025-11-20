@@ -48,7 +48,15 @@ export default function CleanupPage() {
   }, [])
 
   const deleteProduct = async (productId: string, productName: string) => {
-    if (!confirm(`Удалить товар "${productName}"?`)) return
+    if (!confirm(
+      `Удалить товар "${productName}"?\n\n` +
+      `Будут также удалены:\n` +
+      `- Записи из корзин\n` +
+      `- Записи из избранного\n` +
+      `- Записи из сравнения\n` +
+      `- Все отзывы\n\n` +
+      `Это действие нельзя отменить!`
+    )) return
 
     try {
       const response = await fetch(`/api/admin/products/cleanup?productId=${productId}`, {
@@ -58,10 +66,26 @@ export default function CleanupPage() {
       const result = await response.json()
 
       if (result.success) {
-        alert('Товар удалён')
+        let message = 'Товар удалён!'
+        if (result.relatedDeleted) {
+          message += '\n\nУдалено связанных записей:'
+          if (result.relatedDeleted.cartItems > 0) {
+            message += `\n- Корзины: ${result.relatedDeleted.cartItems}`
+          }
+          if (result.relatedDeleted.wishlistItems > 0) {
+            message += `\n- Избранное: ${result.relatedDeleted.wishlistItems}`
+          }
+          if (result.relatedDeleted.compareItems > 0) {
+            message += `\n- Сравнение: ${result.relatedDeleted.compareItems}`
+          }
+          if (result.relatedDeleted.reviews > 0) {
+            message += `\n- Отзывы: ${result.relatedDeleted.reviews}`
+          }
+        }
+        alert(message)
         fetchProducts()
       } else {
-        alert('Ошибка: ' + result.error)
+        alert('Ошибка: ' + (result.details || result.error))
       }
     } catch (error) {
       console.error('Error deleting product:', error)
