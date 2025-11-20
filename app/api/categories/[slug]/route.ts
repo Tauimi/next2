@@ -177,6 +177,12 @@ export async function DELETE(
     const existingCategory = await prisma.category.findUnique({
       where: { id: idOrSlug },
       include: {
+        products: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
         _count: {
           select: {
             products: true,
@@ -194,11 +200,14 @@ export async function DELETE(
     }
 
     // Проверяем есть ли товары в категории
-    if (existingCategory._count.products > 0) {
+    console.log('Category products:', existingCategory.products)
+    console.log('Category _count.products:', existingCategory._count.products)
+    
+    if (existingCategory.products.length > 0) {
       return NextResponse.json(
         { 
           success: false, 
-          error: `Cannot delete category with ${existingCategory._count.products} products. Please move or delete products first.` 
+          error: `Cannot delete category with ${existingCategory.products.length} products: ${existingCategory.products.map(p => p.name).join(', ')}` 
         },
         { status: 400 }
       )
