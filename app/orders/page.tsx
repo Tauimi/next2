@@ -97,18 +97,24 @@ export default function OrdersPage() {
       return
     }
 
-    // Имитируем загрузку заказов
+    // Загрузка заказов
     const loadOrders = async () => {
       try {
         const response = await fetch('/api/orders')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.success) {
-            setOrders(data.data || [])
-          }
+        const data = await response.json()
+        
+        if (!response.ok) {
+          console.error('Orders API error:', data)
+          throw new Error(data.error || 'Failed to load orders')
+        }
+        
+        if (data.success) {
+          setOrders(data.data || [])
         }
       } catch (error) {
         console.error('Error loading orders:', error)
+        // Показываем пустой список вместо ошибки
+        setOrders([])
       } finally {
         setLoading(false)
       }
