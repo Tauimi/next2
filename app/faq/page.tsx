@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
-import { Search, ChevronDown, HelpCircle, Phone, MessageCircle } from 'lucide-react'
+import { ChevronDown, HelpCircle, Phone, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
 
 export const metadata: Metadata = {
   title: 'Часто задаваемые вопросы - TechnoMart',
@@ -129,18 +128,9 @@ export default function FAQPage() {
             <h1 className="text-4xl lg:text-6xl font-bold mb-6">
               Часто задаваемые <span className="text-primary">вопросы</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl text-muted-foreground">
               Найдите ответы на популярные вопросы о заказах, доставке и обслуживании
             </p>
-            
-            {/* Search */}
-            <div className="max-w-2xl mx-auto relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-              <Input 
-                placeholder="Поиск по вопросам..." 
-                className="pl-12 h-12 text-lg"
-              />
-            </div>
           </div>
         </div>
       </section>
