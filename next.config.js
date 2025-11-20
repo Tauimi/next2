@@ -1,11 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // TypeScript и ESLint настройки для продакшена
+  // TypeScript настройки для продакшена
   typescript: {
     ignoreBuildErrors: false,
-  },
-  eslint: {
-    ignoreDuringBuilds: false,
   },
   experimental: {
     // Оптимизации для Vercel
@@ -31,12 +28,8 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   // Оптимизация для Vercel
-  swcMinify: true,
   compress: true,
   poweredByHeader: false,
-  // Размер функций для Vercel
-  serverRuntimeConfig: {},
-  publicRuntimeConfig: {},
   // SEO оптимизация
   async headers() {
     return [
