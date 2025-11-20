@@ -97,6 +97,13 @@ export default function AdminPage() {
       icon: Tags,
       href: '/admin/categories/create',
       color: 'bg-green-600'
+    },
+    {
+      title: '🔧 Очистка товаров',
+      description: 'Найти и удалить "призрачные" товары из БД',
+      icon: RefreshCw,
+      href: '/admin/cleanup',
+      color: 'bg-red-600'
     }
   ]
 
