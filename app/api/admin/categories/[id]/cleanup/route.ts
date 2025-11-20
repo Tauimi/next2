@@ -78,12 +78,12 @@ export async function POST(
 // DELETE /api/admin/categories/[id]/cleanup - Удалить все товары в категории
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin(request)
 
-    const { id } = params
+    const { id } = await params
 
     // Удаляем все товары в категории
     const result = await prisma.product.deleteMany({
