@@ -7,13 +7,14 @@ export const dynamic = 'force-dynamic'
 // GET /api/admin/orders/[id] - Получение заказа по ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin(request)
+    const { id } = await params
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -75,10 +76,11 @@ export async function GET(
 // PUT /api/admin/orders/[id] - Обновление статуса заказа
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin(request)
+    const { id } = await params
 
     const body = await request.json()
     const { status, paymentStatus, trackingNumber, notes } = body
@@ -133,10 +135,11 @@ export async function PUT(
 // DELETE /api/admin/orders/[id] - Удаление заказа
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin(request)
+    const { id } = await params
 
     // Удаляем товары заказа и сам заказ
     await prisma.$transaction([

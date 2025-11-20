@@ -13,10 +13,10 @@ function isId(param: string): boolean {
 // GET /api/categories/[slug] - Получение категории по ID или slug
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params
+    const { slug } = await params
     const isIdParam = isId(slug)
 
     const category = await prisma.category.findFirst({
@@ -55,9 +55,10 @@ export async function GET(
 // PUT /api/categories/[slug] - Обновление категории (только для админов, использует ID)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     await requireAdmin(request)
 
     const { slug: idOrSlug } = params
@@ -158,9 +159,10 @@ export async function PUT(
 // DELETE /api/categories/[slug] - Удаление категории (только для админов, использует ID)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     await requireAdmin(request)
 
     const { slug: idOrSlug } = params

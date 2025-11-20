@@ -7,13 +7,14 @@ export const dynamic = 'force-dynamic'
 // GET /api/admin/users/[id] - Получение пользователя по ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin(request)
+    const { id } = await params
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -77,16 +78,17 @@ export async function GET(
 // PUT /api/admin/users/[id] - Обновление пользователя
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin(request)
+    const { id } = await params
 
     const body = await request.json()
     const { isAdmin, isActive, firstName, lastName, phone, address } = body
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         isAdmin: isAdmin !== undefined ? isAdmin : undefined,
         isActive: isActive !== undefined ? isActive : undefined,
@@ -132,14 +134,15 @@ export async function PUT(
 // DELETE /api/admin/users/[id] - Удаление пользователя
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin(request)
+    const { id } = await params
 
     // Проверяем есть ли заказы у пользователя
     const userWithOrders = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -167,7 +170,7 @@ export async function DELETE(
     }
 
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({
