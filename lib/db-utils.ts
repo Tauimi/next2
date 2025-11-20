@@ -135,7 +135,7 @@ export const optimizedProductInclude = {
 
 // Транзакция с таймаутом
 export async function safeTransaction<T>(
-  operation: (tx: any) => Promise<T>,
+  operation: (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => Promise<T>,
   options: {
     maxWait?: number
     timeout?: number

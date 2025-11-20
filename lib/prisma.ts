@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: any | undefined
+  prisma: PrismaClient | undefined
 }
 
 // Функция для создания Prisma Client с поддержкой Accelerate

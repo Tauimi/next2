@@ -126,7 +126,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 // Дебаунс функции
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -139,7 +139,7 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 // Ограничение частоты вызовов
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -155,20 +155,50 @@ export function throttle<T extends (...args: any[]) => any>(
 }
 
 // Адаптер для преобразования Product в ProductCardData
-export function adaptProductToCard(product: any): ProductCardData {
+interface RawProductImage {
+  url: string
+  alt?: string | null
+  altText?: string
+}
+
+interface RawProduct {
+  id: string
+  name: string
+  slug: string
+  price: number
+  originalPrice?: number | null
+  discount?: number | null
+  inStock: boolean
+  isNew?: boolean
+  isHot?: boolean
+  averageRating?: number
+  totalReviews?: number
+  images?: RawProductImage[]
+  category?: {
+    name: string
+  } | null
+  brand?: {
+    name: string
+  } | null
+  _count?: {
+    reviews?: number
+  }
+}
+
+export function adaptProductToCard(product: RawProduct): ProductCardData {
   return {
     id: product.id.toString(),
     name: product.name,
     slug: product.slug,
     price: product.price,
-    originalPrice: product.originalPrice,
-    discount: product.discount,
+    originalPrice: product.originalPrice ?? undefined,
+    discount: product.discount ?? undefined,
     inStock: product.inStock,
     isNew: product.isNew,
     isHot: product.isHot,
     averageRating: product.averageRating || 0,
     totalReviews: product._count?.reviews || product.totalReviews || 0,
-    images: product.images?.map((img: any) => ({
+    images: product.images?.map((img) => ({
       url: img.url,
       alt: img.alt || img.altText || product.name
     })) || [],
@@ -182,7 +212,18 @@ export function adaptProductToCard(product: any): ProductCardData {
 }
 
 // Получение товаров с правильной типизацией
-export async function fetchProducts(params: any = {}): Promise<ProductCardData[]> {
+interface FetchProductsParams {
+  page?: number
+  limit?: number
+  categoryId?: string
+  search?: string
+  minPrice?: number
+  maxPrice?: number
+  inStock?: boolean
+  [key: string]: string | number | boolean | undefined
+}
+
+export async function fetchProducts(params: FetchProductsParams = {}): Promise<ProductCardData[]> {
   try {
     const searchParams = new URLSearchParams()
     
