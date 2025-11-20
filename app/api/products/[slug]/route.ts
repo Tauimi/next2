@@ -271,20 +271,53 @@ export async function DELETE(
     }
 
     // Удаляем связанные данные и товар
+    console.log('Deleting product with all related data:', idOrSlug)
+    
     await prisma.$transaction([
-      // Удаляем изображения
+      // Удаляем из корзин
+      prisma.cartItem.deleteMany({
+        where: { productId: idOrSlug }
+      }),
+      // Удаляем из избранного
+      prisma.wishlistItem.deleteMany({
+        where: { productId: idOrSlug }
+      }),
+      // Удаляем из сравнения
+      prisma.compareItem.deleteMany({
+        where: { productId: idOrSlug }
+      }),
+      // Удаляем отзывы (изображения отзывов удалятся каскадно)
+      prisma.review.deleteMany({
+        where: { productId: idOrSlug }
+      }),
+      // Удаляем изображения товара
       prisma.productImage.deleteMany({
+        where: { productId: idOrSlug }
+      }),
+      // Удаляем видео товара
+      prisma.productVideo.deleteMany({
         where: { productId: idOrSlug }
       }),
       // Удаляем характеристики
       prisma.productSpecification.deleteMany({
         where: { productId: idOrSlug }
       }),
+      // Удаляем связи с другими товарами
+      prisma.productRelation.deleteMany({
+        where: {
+          OR: [
+            { fromProductId: idOrSlug },
+            { toProductId: idOrSlug }
+          ]
+        }
+      }),
       // Удаляем товар
       prisma.product.delete({
         where: { id: idOrSlug }
       })
     ])
+    
+    console.log('Product deleted successfully with all related data')
 
     return NextResponse.json({
       success: true,
@@ -294,11 +327,25 @@ export async function DELETE(
   } catch (error) {
     console.error('Delete product error:', error)
     
-    if (error instanceof Error && error.message.includes('Access denied')) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 403 }
-      )
+    if (error instanceof Error) {
+      if (error.message.includes('Access denied')) {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 403 }
+        )
+      }
+      
+      // Обработка ошибок foreign key
+      if (error.message.includes('Foreign key constraint')) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Cannot delete product: it has related records. Please try again or contact support.',
+            details: error.message
+          },
+          { status: 400 }
+        )
+      }
     }
 
     return NextResponse.json(
