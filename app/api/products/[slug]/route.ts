@@ -6,9 +6,9 @@ import { createSlug } from '@/lib/utils'
 export const dynamic = 'force-dynamic'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 // Проверяем является ли параметр ID (CUID) или slug
@@ -19,7 +19,7 @@ function isId(param: string): boolean {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { slug } = params
+    const { slug } = await params
     const isIdParam = isId(slug)
 
     const product = await prisma.product.findFirst({

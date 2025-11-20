@@ -7,12 +7,12 @@ export const dynamic = 'force-dynamic'
 // POST /api/admin/categories/[id]/cleanup - Очистка "призрачных" товаров
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin(request)
 
-    const { id } = params
+    const { id } = await params
 
     // Получаем категорию с товарами
     const category = await prisma.category.findUnique({
