@@ -212,9 +212,14 @@ export async function DELETE(
       id: existingCategory.id,
       name: existingCategory.name,
       productsCount: existingCategory._count.products,
+      actualProducts: existingCategory.products.length,
       childrenCount: existingCategory._count.children,
       force,
-      moveToCategoryId
+      moveToCategoryId,
+      products: existingCategory.products.map((p: { id: string; name: string }) => ({
+        id: p.id,
+        name: p.name
+      }))
     })
 
     // Проверяем есть ли подкатегории

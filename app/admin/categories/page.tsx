@@ -65,6 +65,41 @@ export default function AdminCategoriesPage() {
     }
   }
 
+  const checkCategoryProducts = async (categoryId: number) => {
+    try {
+      const response = await fetch(`/api/admin/categories/${categoryId}/cleanup`, {
+        method: 'POST'
+      })
+      const result = await response.json()
+      
+      if (result.success) {
+        console.log('Category products:', result.data)
+        alert(
+          `Категория содержит ${result.data.productsCount} товаров:\n\n` +
+          result.data.products.map((p: any) => `- ${p.name} (${p.slug})`).join('\n')
+        )
+        
+        if (result.data.productsCount > 0) {
+          const shouldDelete = confirm('Удалить все эти товары?')
+          if (shouldDelete) {
+            const deleteResponse = await fetch(`/api/admin/categories/${categoryId}/cleanup`, {
+              method: 'DELETE'
+            })
+            const deleteResult = await deleteResponse.json()
+            
+            if (deleteResult.success) {
+              alert(`Удалено ${deleteResult.deletedCount} товаров`)
+              fetchCategories()
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Check products error:', error)
+      alert('Ошибка проверки товаров')
+    }
+  }
+
   const deleteCategory = async (categoryId: number, categoryName: string) => {
     const category = categories.find(c => c.id === categoryId)
     
@@ -247,6 +282,16 @@ export default function AdminCategoriesPage() {
                     <Edit className="w-4 h-4" />
                   </Button>
                 </Link>
+                {category._count.products > 0 && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => checkCategoryProducts(category.id)}
+                    title="Проверить товары"
+                  >
+                    🔍
+                  </Button>
+                )}
                 <Button 
                   size="sm" 
                   variant="outline"
