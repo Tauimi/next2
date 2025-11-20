@@ -174,14 +174,24 @@ export default function CartPage() {
               
               <div className="flex justify-between">
                 <span className="text-secondary-600">Доставка</span>
-                <span className="font-medium text-green-600">Бесплатно</span>
+                {totalAmount >= 50000 ? (
+                  <span className="font-medium text-green-600">Бесплатно</span>
+                ) : (
+                  <span className="font-medium">1 000 ₽</span>
+                )}
               </div>
+              
+              {totalAmount < 50000 && (
+                <div className="text-sm text-muted-foreground">
+                  До бесплатной доставки: {(50000 - totalAmount).toLocaleString()} ₽
+                </div>
+              )}
               
               <hr className="border-secondary-200" />
               
               <div className="flex justify-between text-lg font-semibold">
                 <span>Итого</span>
-                <span>{totalAmount.toLocaleString()} ₽</span>
+                <span>{(totalAmount + (totalAmount >= 50000 ? 0 : 1000)).toLocaleString()} ₽</span>
               </div>
             </div>
 
@@ -197,7 +207,7 @@ export default function CartPage() {
             </div>
 
             <div className="mt-6 text-sm text-secondary-500">
-              <p>• Бесплатная доставка от 5000 ₽</p>
+              <p>• Бесплатная доставка от 50 000 ₽</p>
               <p>• Гарантия на все товары</p>
               <p>• Возврат в течение 14 дней</p>
             </div>
