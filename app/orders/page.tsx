@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { useAuthStore } from '@/store/auth'
 import { formatDate, formatPrice } from '@/lib/utils'
 
-type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED'
 
 interface OrderItem {
   id: string
@@ -46,41 +46,53 @@ interface Order {
 
 const getStatusInfo = (status: OrderStatus) => {
   switch (status) {
-    case 'pending':
+    case 'PENDING':
       return { 
         label: 'Ожидает подтверждения', 
         color: 'bg-yellow-100 text-yellow-800',
         icon: Clock 
       }
-    case 'confirmed':
+    case 'CONFIRMED':
       return { 
         label: 'Подтвержден', 
         color: 'bg-blue-100 text-blue-800',
         icon: CheckCircle 
       }
-    case 'processing':
+    case 'PROCESSING':
       return { 
         label: 'Обрабатывается', 
         color: 'bg-orange-100 text-orange-800',
         icon: Package 
       }
-    case 'shipped':
+    case 'SHIPPED':
       return { 
         label: 'Отправлен', 
         color: 'bg-purple-100 text-purple-800',
         icon: Truck 
       }
-    case 'delivered':
+    case 'DELIVERED':
       return { 
         label: 'Доставлен', 
         color: 'bg-green-100 text-green-800',
         icon: CheckCircle 
       }
-    case 'cancelled':
+    case 'CANCELLED':
       return { 
         label: 'Отменен', 
         color: 'bg-red-100 text-red-800',
         icon: XCircle 
+      }
+    case 'REFUNDED':
+      return { 
+        label: 'Возврат', 
+        color: 'bg-gray-100 text-gray-800',
+        icon: XCircle 
+      }
+    default:
+      return { 
+        label: 'Неизвестно', 
+        color: 'bg-gray-100 text-gray-800',
+        icon: Package 
       }
   }
 }
