@@ -106,13 +106,33 @@ export async function POST(request: NextRequest) {
       customerPhone,
       shippingAddress,
       billingAddress,
-      notes
+      notes,
+      paymentMethod = 'CASH',
+      shippingMethod = 'COURIER'
     } = body
 
     // Валидация обязательных полей
     if (!customerName || !customerEmail || !customerPhone || !shippingAddress) {
       return NextResponse.json(
         { error: 'Заполните все обязательные поля' },
+        { status: 400 }
+      )
+    }
+
+    // Валидация способа оплаты
+    const validPaymentMethods = ['CASH', 'CARD_COURIER', 'CARD_ONLINE', 'BANK_TRANSFER', 'SBP']
+    if (!validPaymentMethods.includes(paymentMethod)) {
+      return NextResponse.json(
+        { error: 'Неверный способ оплаты' },
+        { status: 400 }
+      )
+    }
+
+    // Валидация способа доставки
+    const validShippingMethods = ['COURIER', 'PICKUP', 'POST', 'CDEK', 'BOXBERRY']
+    if (!validShippingMethods.includes(shippingMethod)) {
+      return NextResponse.json(
+        { error: 'Неверный способ доставки' },
         { status: 400 }
       )
     }
@@ -162,13 +182,46 @@ export async function POST(request: NextRequest) {
       return sum + (item.product.price * item.quantity)
     }, 0)
 
-    const shippingCost = subtotal >= 50000 ? 0 : 1000 // Бесплатная доставка от 50k
+    // Расчет стоимости доставки в зависимости от способа
+    let shippingCost = 0
+    if (shippingMethod === 'COURIER') {
+      shippingCost = subtotal >= 50000 ? 0 : 1000
+    } else if (shippingMethod === 'PICKUP') {
+      shippingCost = 0 // Самовывоз бесплатно
+    } else if (shippingMethod === 'POST') {
+      shippingCost = 500
+    } else if (shippingMethod === 'CDEK' || shippingMethod === 'BOXBERRY') {
+      shippingCost = 700
+    }
+
     const tax = 0 // НДС включен в цену
     const discount = 0 // Без скидок пока
     const totalAmount = subtotal + shippingCost + tax - discount
 
     // Генерация номера заказа
     const orderNumber = `ORD-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
+
+    // Проверка на дубли заказов (за последние 5 минут)
+    const recentOrder = await prisma.order.findFirst({
+      where: {
+        userId: user.id,
+        customerEmail,
+        totalAmount,
+        createdAt: {
+          gte: new Date(Date.now() - 5 * 60 * 1000) // 5 минут назад
+        }
+      }
+    })
+
+    if (recentOrder) {
+      return NextResponse.json(
+        { 
+          error: 'Похожий заказ уже был создан недавно',
+          orderId: recentOrder.id 
+        },
+        { status: 400 }
+      )
+    }
 
     // Создание заказа в транзакции
     const order = await prisma.$transaction(async (tx: any) => {
@@ -189,7 +242,9 @@ export async function POST(request: NextRequest) {
           totalAmount,
           notes,
           status: 'PENDING',
-          paymentStatus: 'PENDING'
+          paymentStatus: 'PENDING',
+          paymentMethod,
+          shippingMethod
         }
       })
 

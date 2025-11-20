@@ -299,8 +299,8 @@ model CompareItem {
 
 // Модель заказа
 model Order {
-  id              String        @id @default(cuid())
-  orderNumber     String        @unique
+  id              String         @id @default(cuid())
+  orderNumber     String         @unique
   userId          String?
   customerName    String
   customerEmail   String
@@ -308,16 +308,18 @@ model Order {
   shippingAddress Json
   billingAddress  Json?
   subtotal        Float
-  shippingCost    Float         @default(0)
-  tax             Float         @default(0)
-  discount        Float         @default(0)
+  shippingCost    Float          @default(0)
+  tax             Float          @default(0)
+  discount        Float          @default(0)
   totalAmount     Float
-  status          OrderStatus   @default(PENDING)
-  paymentStatus   PaymentStatus @default(PENDING)
+  status          OrderStatus    @default(PENDING)
+  paymentStatus   PaymentStatus  @default(PENDING)
+  paymentMethod   PaymentMethod? @default(CASH)
+  shippingMethod  ShippingMethod? @default(COURIER)
   notes           String?
   trackingNumber  String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   shippedAt       DateTime?
   deliveredAt     DateTime?
 
@@ -364,6 +366,22 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+enum PaymentMethod {
+  CASH          // Наличные при получении
+  CARD_COURIER  // Картой курьеру
+  CARD_ONLINE   // Онлайн оплата картой
+  BANK_TRANSFER // Банковский перевод
+  SBP           // Система быстрых платежей
+}
+
+enum ShippingMethod {
+  COURIER       // Курьерская доставка
+  PICKUP        // Самовывоз
+  POST          // Почта России
+  CDEK          // СДЭК
+  BOXBERRY      // Boxberry
 }
 
 // === КОРПОРАТИВНЫЕ СТРАНИЦЫ ===

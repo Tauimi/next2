@@ -22,6 +22,8 @@ interface OrderFormData {
   shippingAddress: ShippingAddress
   billingAddress?: ShippingAddress
   notes: string
+  paymentMethod: string
+  shippingMethod: string
 }
 
 export default function CheckoutPage() {
@@ -45,8 +47,36 @@ export default function CheckoutPage() {
       zipCode: '',
       country: 'Россия'
     },
-    notes: ''
+    notes: '',
+    paymentMethod: 'CASH',
+    shippingMethod: 'COURIER'
   })
+
+  // Автосохранение формы в localStorage
+  useEffect(() => {
+    const savedForm = localStorage.getItem('checkout-form')
+    if (savedForm) {
+      try {
+        const parsed = JSON.parse(savedForm)
+        setFormData(prev => ({
+          ...prev,
+          ...parsed,
+          customerEmail: user?.email || parsed.customerEmail,
+          customerName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : parsed.customerName
+        }))
+      } catch (e) {
+        console.error('Error loading saved form:', e)
+      }
+    }
+  }, [user])
+
+  // Сохранение формы при изменении
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      localStorage.setItem('checkout-form', JSON.stringify(formData))
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [formData])
 
   // Проверяем корзину при загрузке
   useEffect(() => {
@@ -133,7 +163,8 @@ export default function CheckoutPage() {
 
       setOrderId(result.data.id)
       clearCart()
-      setCurrentStep(4) // Шаг подтверждения
+      localStorage.removeItem('checkout-form') // Очищаем сохраненную форму
+      setCurrentStep(6) // Шаг успеха
       toast.success('Заказ успешно оформлен!')
 
     } catch (err) {
@@ -145,15 +176,102 @@ export default function CheckoutPage() {
     }
   }
 
-  // Расчет стоимости доставки
-  const shippingCost = totalAmount >= 50000 ? 0 : 1000
+  // Расчет стоимости доставки в зависимости от способа
+  const calculateShippingCost = () => {
+    if (formData.shippingMethod === 'COURIER') {
+      return totalAmount >= 50000 ? 0 : 1000
+    } else if (formData.shippingMethod === 'PICKUP') {
+      return 0
+    } else if (formData.shippingMethod === 'POST') {
+      return 500
+    } else if (formData.shippingMethod === 'CDEK' || formData.shippingMethod === 'BOXBERRY') {
+      return 700
+    }
+    return 0
+  }
+
+  const shippingCost = calculateShippingCost()
   const finalTotal = totalAmount + shippingCost
+
+  // Способы доставки
+  const shippingMethods = [
+    { 
+      id: 'COURIER', 
+      name: 'Курьерская доставка', 
+      description: 'Доставка по адресу',
+      cost: totalAmount >= 50000 ? 0 : 1000,
+      time: '1-2 дня'
+    },
+    { 
+      id: 'PICKUP', 
+      name: 'Самовывоз', 
+      description: 'Забрать из магазина',
+      cost: 0,
+      time: 'Сегодня'
+    },
+    { 
+      id: 'POST', 
+      name: 'Почта России', 
+      description: 'Доставка почтой',
+      cost: 500,
+      time: '5-7 дней'
+    },
+    { 
+      id: 'CDEK', 
+      name: 'СДЭК', 
+      description: 'Пункт выдачи СДЭК',
+      cost: 700,
+      time: '2-3 дня'
+    },
+    { 
+      id: 'BOXBERRY', 
+      name: 'Boxberry', 
+      description: 'Пункт выдачи Boxberry',
+      cost: 700,
+      time: '2-3 дня'
+    }
+  ]
+
+  // Способы оплаты
+  const paymentMethods = [
+    { 
+      id: 'CASH', 
+      name: 'Наличные при получении', 
+      description: 'Оплата курьеру или в пункте выдачи',
+      icon: '💵'
+    },
+    { 
+      id: 'CARD_COURIER', 
+      name: 'Картой курьеру', 
+      description: 'Оплата картой при получении',
+      icon: '💳'
+    },
+    { 
+      id: 'CARD_ONLINE', 
+      name: 'Онлайн оплата', 
+      description: 'Оплата картой на сайте',
+      icon: '🌐'
+    },
+    { 
+      id: 'BANK_TRANSFER', 
+      name: 'Банковский перевод', 
+      description: 'Оплата по реквизитам',
+      icon: '🏦'
+    },
+    { 
+      id: 'SBP', 
+      name: 'СБП', 
+      description: 'Система быстрых платежей',
+      icon: '⚡'
+    }
+  ]
 
   const steps = [
     { number: 1, title: 'Контактные данные', icon: Package },
-    { number: 2, title: 'Адрес доставки', icon: Truck },
-    { number: 3, title: 'Подтверждение', icon: CreditCard },
-    { number: 4, title: 'Готово', icon: CheckCircle },
+    { number: 2, title: 'Доставка', icon: Truck },
+    { number: 3, title: 'Оплата', icon: CreditCard },
+    { number: 4, title: 'Подтверждение', icon: CheckCircle },
+    { number: 5, title: 'Готово', icon: CheckCircle },
   ]
 
   if (items.length === 0 && !orderId) {
@@ -374,8 +492,117 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Шаг 3: Подтверждение */}
+            {/* Шаг 3: Способ доставки */}
             {currentStep === 3 && (
+              <div className="bg-white rounded-lg p-6 shadow-sm border">
+                <h2 className="text-xl font-semibold mb-6">Способ доставки</h2>
+                
+                <div className="space-y-3">
+                  {shippingMethods.map((method) => (
+                    <label
+                      key={method.id}
+                      className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        formData.shippingMethod === method.id
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="radio"
+                          name="shippingMethod"
+                          value={method.id}
+                          checked={formData.shippingMethod === method.id}
+                          onChange={(e) => updateFormData('shippingMethod', e.target.value)}
+                          className="w-4 h-4 text-primary"
+                        />
+                        <div>
+                          <div className="font-medium">{method.name}</div>
+                          <div className="text-sm text-muted-foreground">{method.description}</div>
+                          <div className="text-sm text-muted-foreground">Срок: {method.time}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">
+                          {method.cost === 0 ? 'Бесплатно' : `${method.cost} ₽`}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="flex justify-between mt-6">
+                  <button
+                    onClick={() => setCurrentStep(2)}
+                    className="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Назад
+                  </button>
+                  <button
+                    onClick={() => setCurrentStep(4)}
+                    className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    Далее
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Шаг 4: Способ оплаты */}
+            {currentStep === 4 && (
+              <div className="bg-white rounded-lg p-6 shadow-sm border">
+                <h2 className="text-xl font-semibold mb-6">Способ оплаты</h2>
+                
+                <div className="space-y-3">
+                  {paymentMethods.map((method) => (
+                    <label
+                      key={method.id}
+                      className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        formData.paymentMethod === method.id
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={method.id}
+                          checked={formData.paymentMethod === method.id}
+                          onChange={(e) => updateFormData('paymentMethod', e.target.value)}
+                          className="w-4 h-4 text-primary"
+                        />
+                        <div>
+                          <div className="font-medium flex items-center gap-2">
+                            <span>{method.icon}</span>
+                            {method.name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">{method.description}</div>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="flex justify-between mt-6">
+                  <button
+                    onClick={() => setCurrentStep(3)}
+                    className="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Назад
+                  </button>
+                  <button
+                    onClick={() => setCurrentStep(5)}
+                    className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    Далее
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Шаг 5: Подтверждение */}
+            {currentStep === 5 && (
               <div className="bg-white rounded-lg p-6 shadow-sm border">
                 <h2 className="text-xl font-semibold mb-6">Подтверждение заказа</h2>
                 
@@ -401,11 +628,41 @@ export default function CheckoutPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Способ доставки */}
+                  <div>
+                    <h3 className="font-medium mb-3">Способ доставки</h3>
+                    <div className="bg-muted/50 rounded-lg p-4 text-sm">
+                      <p className="font-medium">
+                        {shippingMethods.find(m => m.id === formData.shippingMethod)?.name}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {shippingMethods.find(m => m.id === formData.shippingMethod)?.description}
+                      </p>
+                      <p className="mt-1">
+                        Стоимость: {shippingCost === 0 ? 'Бесплатно' : `${shippingCost} ₽`}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Способ оплаты */}
+                  <div>
+                    <h3 className="font-medium mb-3">Способ оплаты</h3>
+                    <div className="bg-muted/50 rounded-lg p-4 text-sm">
+                      <p className="font-medium flex items-center gap-2">
+                        <span>{paymentMethods.find(m => m.id === formData.paymentMethod)?.icon}</span>
+                        {paymentMethods.find(m => m.id === formData.paymentMethod)?.name}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {paymentMethods.find(m => m.id === formData.paymentMethod)?.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-between mt-6">
                   <button
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() => setCurrentStep(4)}
                     className="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     Назад
@@ -422,8 +679,8 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Шаг 4: Успех */}
-            {currentStep === 4 && orderId && (
+            {/* Шаг 6: Успех */}
+            {currentStep === 6 && orderId && (
               <div className="bg-white rounded-lg p-6 shadow-sm border text-center">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-semibold mb-2">Заказ успешно оформлен!</h2>
@@ -451,7 +708,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Сводка заказа */}
-          {currentStep <= 3 && (
+          {currentStep <= 5 && (
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg p-6 shadow-sm border sticky top-8">
                 <h3 className="text-xl font-semibold mb-4">Ваш заказ</h3>
