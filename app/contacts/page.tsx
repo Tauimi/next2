@@ -1,10 +1,15 @@
-import { Metadata } from 'next'
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Clock, MessageCircle, Send } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { ValidatedTextarea } from '@/components/ui/ValidatedTextarea'
+import { formatPhone } from '@/lib/validation'
 
-export const metadata: Metadata = {
+const metadata = {
   title: 'Контакты TechnoMart - Связаться с нами',
   description: 'Свяжитесь с TechnoMart: телефон, email, адрес офиса, режим работы. Форма обратной связи для консультации.',
   openGraph: {
