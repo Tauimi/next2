@@ -121,6 +121,7 @@ export default function OrdersPage() {
         }
         
         if (data.success) {
+          console.log('Orders loaded:', data.data)
           setOrders(data.data || [])
         }
       } catch (error) {
@@ -209,6 +210,10 @@ export default function OrdersPage() {
               <div className="space-y-6">
                 {orders.map((order) => {
                   const statusInfo = getStatusInfo(order.status)
+                  if (!statusInfo) {
+                    console.error('Unknown order status:', order.status)
+                    return null
+                  }
                   const StatusIcon = statusInfo.icon
 
                   return (
