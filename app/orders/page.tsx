@@ -44,56 +44,51 @@ interface Order {
 
 // Заказы будут загружаться из API
 
-const getStatusInfo = (status: OrderStatus) => {
-  switch (status) {
-    case 'PENDING':
-      return { 
-        label: 'Ожидает подтверждения', 
-        color: 'bg-yellow-100 text-yellow-800',
-        icon: Clock 
-      }
-    case 'CONFIRMED':
-      return { 
-        label: 'Подтвержден', 
-        color: 'bg-blue-100 text-blue-800',
-        icon: CheckCircle 
-      }
-    case 'PROCESSING':
-      return { 
-        label: 'Обрабатывается', 
-        color: 'bg-orange-100 text-orange-800',
-        icon: Package 
-      }
-    case 'SHIPPED':
-      return { 
-        label: 'Отправлен', 
-        color: 'bg-purple-100 text-purple-800',
-        icon: Truck 
-      }
-    case 'DELIVERED':
-      return { 
-        label: 'Доставлен', 
-        color: 'bg-green-100 text-green-800',
-        icon: CheckCircle 
-      }
-    case 'CANCELLED':
-      return { 
-        label: 'Отменен', 
-        color: 'bg-red-100 text-red-800',
-        icon: XCircle 
-      }
-    case 'REFUNDED':
-      return { 
-        label: 'Возврат', 
-        color: 'bg-gray-100 text-gray-800',
-        icon: XCircle 
-      }
-    default:
-      return { 
-        label: 'Неизвестно', 
-        color: 'bg-gray-100 text-gray-800',
-        icon: Package 
-      }
+const getStatusInfo = (status: OrderStatus | string) => {
+  const statusUpper = String(status).toUpperCase()
+  
+  const statusMap: Record<string, { label: string; color: string; icon: any }> = {
+    'PENDING': { 
+      label: 'Ожидает подтверждения', 
+      color: 'bg-yellow-100 text-yellow-800',
+      icon: Clock 
+    },
+    'CONFIRMED': { 
+      label: 'Подтвержден', 
+      color: 'bg-blue-100 text-blue-800',
+      icon: CheckCircle 
+    },
+    'PROCESSING': { 
+      label: 'Обрабатывается', 
+      color: 'bg-orange-100 text-orange-800',
+      icon: Package 
+    },
+    'SHIPPED': { 
+      label: 'Отправлен', 
+      color: 'bg-purple-100 text-purple-800',
+      icon: Truck 
+    },
+    'DELIVERED': { 
+      label: 'Доставлен', 
+      color: 'bg-green-100 text-green-800',
+      icon: CheckCircle 
+    },
+    'CANCELLED': { 
+      label: 'Отменен', 
+      color: 'bg-red-100 text-red-800',
+      icon: XCircle 
+    },
+    'REFUNDED': { 
+      label: 'Возврат', 
+      color: 'bg-gray-100 text-gray-800',
+      icon: XCircle 
+    }
+  }
+  
+  return statusMap[statusUpper] || { 
+    label: 'Неизвестно', 
+    color: 'bg-gray-100 text-gray-800',
+    icon: Package 
   }
 }
 
