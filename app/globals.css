@@ -230,35 +230,35 @@
   
   /* Надежные цветовые утилиты для секций */
   .section-gradient {
-    @apply bg-gradient-to-r from-primary-600 to-accent-500;
+    @apply bg-gradient-to-r from-primary-600 to-accent-500 text-white;
   }
   
-  .section-gradient * {
-    @apply text-white;
-  }
-  
+  /* Все заголовки белые */
   .section-gradient h1,
   .section-gradient h2,
   .section-gradient h3,
   .section-gradient h4,
   .section-gradient h5,
   .section-gradient h6 {
-    @apply text-white;
+    @apply text-white !important;
   }
   
-  .section-gradient p,
-  .section-gradient span,
-  .section-gradient div {
-    @apply text-white;
+  /* Параграфы и обычный текст белые */
+  .section-gradient p {
+    @apply text-white !important;
   }
   
-  /* Исключения для кнопок и карточек внутри градиента */
-  .section-gradient .btn,
-  .section-gradient .card,
+  /* Исключения - элементы которые НЕ должны быть белыми */
   .section-gradient input,
   .section-gradient select,
-  .section-gradient textarea {
-    @apply text-secondary-900;
+  .section-gradient textarea,
+  .section-gradient .card {
+    @apply text-secondary-900 !important;
+  }
+  
+  /* Кнопки внутри градиента сохраняют свои стили */
+  .section-gradient button {
+    /* Не перезаписываем цвет кнопок */
   }
   
   /* Надежные утилиты для карточек */

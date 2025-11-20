@@ -389,7 +389,7 @@ export default function ClientsPage() {
               <Button size="lg" variant="secondary">
                 Бесплатная консультация
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+              <Button size="lg" variant="outline-white">
                 Смотреть проекты
               </Button>
             </div>

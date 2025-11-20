@@ -319,7 +319,7 @@ export default function ProjectsPage() {
               <Button size="lg" variant="secondary">
                 Бесплатная консультация
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+              <Button size="lg" variant="outline-white">
                 Смотреть портфолио
               </Button>
             </div>

@@ -229,7 +229,7 @@ export default function ReferencePage() {
                 <Phone className="w-5 h-5 mr-2" />
                 +7 (800) 123-45-67
               </Button>
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-primary">
+              <Button size="lg" variant="outline-white">
                 <Mail className="w-5 h-5 mr-2" />
                 Написать в поддержку
               </Button>

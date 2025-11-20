@@ -417,7 +417,7 @@ export default function HomePage() {
                   Заказать услугу
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+              <Button size="lg" variant="outline-white">
                 Онлайн-консультация
               </Button>
             </div>

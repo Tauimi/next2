@@ -470,7 +470,7 @@ export default function WishlistPage() {
                     Добавить все в корзину
                   </Button>
                 )}
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" asChild>
+                <Button size="lg" variant="outline-white" asChild>
                   <Link href="/catalog">Продолжить покупки</Link>
                 </Button>
               </div>

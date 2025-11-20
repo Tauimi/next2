@@ -261,7 +261,7 @@ export default function WarrantyPage() {
                 <Phone className="mr-2 w-5 h-5" />
                 Сервисный центр
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+              <Button size="lg" variant="outline-white">
                 Оформить заявку
               </Button>
             </div>
