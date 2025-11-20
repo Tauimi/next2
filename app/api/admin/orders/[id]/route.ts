@@ -90,7 +90,7 @@ export async function PUT(
     const paymentStatusUpper = paymentStatus ? String(paymentStatus).toUpperCase() : undefined
 
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: statusUpper as any,
         paymentStatus: paymentStatusUpper as any,
@@ -144,10 +144,10 @@ export async function DELETE(
     // Удаляем товары заказа и сам заказ
     await prisma.$transaction([
       prisma.orderItem.deleteMany({
-        where: { orderId: params.id }
+        where: { orderId: id }
       }),
       prisma.order.delete({
-        where: { id: params.id }
+        where: { id }
       })
     ])
 

@@ -61,7 +61,7 @@ export async function PUT(
     const { slug } = await params
     await requireAdmin(request)
 
-    const { slug: idOrSlug } = params
+    const idOrSlug = slug
     
     // Для редактирования используем только ID
     if (!isId(idOrSlug)) {
@@ -165,7 +165,7 @@ export async function DELETE(
     const { slug } = await params
     await requireAdmin(request)
 
-    const { slug: idOrSlug } = params
+    const idOrSlug = slug
     const { searchParams } = new URL(request.url)
     const force = searchParams.get('force') === 'true'
     const moveToCategoryId = searchParams.get('moveTo')

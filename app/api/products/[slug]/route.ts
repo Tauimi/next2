@@ -134,7 +134,8 @@ export async function PUT(
   try {
     await requireAdmin(request)
 
-    const { slug: idOrSlug } = params
+    const { slug } = await params
+    const idOrSlug = slug
     
     // Для редактирования используем только ID
     if (!isId(idOrSlug)) {
@@ -252,7 +253,8 @@ export async function DELETE(
   try {
     await requireAdmin(request)
 
-    const { slug: idOrSlug } = params
+    const { slug } = await params
+    const idOrSlug = slug
     
     // Для удаления используем только ID
     if (!isId(idOrSlug)) {
