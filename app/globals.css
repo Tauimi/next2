@@ -260,6 +260,62 @@
   .section-gradient textarea {
     @apply text-secondary-900;
   }
+  
+  /* Надежные утилиты для карточек */
+  .card-muted {
+    @apply bg-muted/50 rounded-xl p-6;
+  }
+  
+  .card-white {
+    @apply bg-white rounded-xl p-6 shadow-sm;
+  }
+  
+  .card-hover {
+    @apply bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow duration-200;
+  }
+  
+  /* Иконки в кружках */
+  .icon-circle {
+    @apply w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center;
+  }
+  
+  .icon-circle-primary {
+    @apply w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center;
+  }
+  
+  /* Бейджи */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-primary {
+    @apply badge bg-primary text-white;
+  }
+  
+  .badge-success {
+    @apply badge bg-green-500 text-white;
+  }
+  
+  .badge-warning {
+    @apply badge bg-yellow-500 text-white;
+  }
+  
+  .badge-error {
+    @apply badge bg-red-500 text-white;
+  }
+  
+  /* Надежная типографика */
+  .text-subtitle {
+    @apply text-xl text-muted-foreground;
+  }
+  
+  .text-description {
+    @apply text-muted-foreground;
+  }
+  
+  .text-small {
+    @apply text-sm text-muted-foreground;
+  }
 } 
 
 /* Стили доступности */
