@@ -96,6 +96,50 @@ const offices = [
 ]
 
 export default function ContactsPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    subject: 'Консультация по товарам',
+    message: '',
+    privacy: false
+  })
+
+  const [validationState, setValidationState] = useState({
+    name: false,
+    phone: false,
+    email: false,
+    message: false
+  })
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const isFormValid = Object.values(validationState).every(v => v) && formData.privacy
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isFormValid) return
+
+    setIsSubmitting(true)
+    // Здесь будет отправка формы
+    console.log('Form data:', formData)
+    
+    // Имитация отправки
+    setTimeout(() => {
+      alert('Сообщение отправлено!')
+      setIsSubmitting(false)
+      // Сброс формы
+      setFormData({
+        name: '',
+        phone: '',
+        email: '',
+        subject: 'Консультация по товарам',
+        message: '',
+        privacy: false
+      })
+    }, 1000)
+  }
+
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
@@ -139,26 +183,68 @@ export default function ContactsPage() {
             {/* Contact Form */}
             <div>
               <h2 className="text-3xl font-bold mb-6">Напишите нам</h2>
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Имя *</label>
-                    <Input placeholder="Ваше имя" required />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Телефон *</label>
-                    <Input placeholder="+7 (000) 000-00-00" required />
-                  </div>
+                  <ValidatedInput
+                    label="Имя"
+                    placeholder="Ваше имя"
+                    value={formData.name}
+                    onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
+                    validationRules={{
+                      required: true,
+                      minLength: 2,
+                      maxLength: 100,
+                      pattern: /[а-яА-ЯёЁa-zA-Z]/,
+                      message: 'Имя должно содержать минимум 2 символа'
+                    }}
+                    onValidationChange={(result) => 
+                      setValidationState(prev => ({ ...prev, name: result.isValid }))
+                    }
+                  />
+                  
+                  <ValidatedInput
+                    label="Телефон"
+                    type="tel"
+                    placeholder="+7 (900) 123-45-67"
+                    value={formData.phone}
+                    onChange={(value) => {
+                      const formatted = formatPhone(value)
+                      setFormData(prev => ({ ...prev, phone: formatted }))
+                    }}
+                    validationRules={{
+                      required: true,
+                      minLength: 11,
+                      message: 'Введите корректный номер телефона'
+                    }}
+                    onValidationChange={(result) => 
+                      setValidationState(prev => ({ ...prev, phone: result.isValid }))
+                    }
+                  />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email *</label>
-                  <Input type="email" placeholder="your@email.com" required />
-                </div>
+                <ValidatedInput
+                  label="Email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={formData.email}
+                  onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
+                  validationRules={{
+                    required: true,
+                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: 'Введите корректный email адрес'
+                  }}
+                  onValidationChange={(result) => 
+                    setValidationState(prev => ({ ...prev, email: result.isValid }))
+                  }
+                />
                 
                 <div>
                   <label className="block text-sm font-medium mb-2">Тема обращения</label>
-                  <select className="w-full h-10 rounded-lg border border-secondary-300 bg-white px-3 py-2 text-sm">
+                  <select 
+                    className="w-full h-10 rounded-lg border border-secondary-300 bg-white px-3 py-2 text-sm"
+                    value={formData.subject}
+                    onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+                  >
                     <option>Консультация по товарам</option>
                     <option>Корпоративные продажи</option>
                     <option>Техническая поддержка</option>
@@ -167,25 +253,41 @@ export default function ContactsPage() {
                   </select>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Сообщение *</label>
-                  <textarea 
-                    className="w-full min-h-[120px] rounded-lg border border-secondary-300 bg-white px-3 py-2 text-sm resize-none"
-                    placeholder="Опишите ваш вопрос или требования..."
-                    required
-                  />
-                </div>
+                <ValidatedTextarea
+                  label="Сообщение"
+                  placeholder="Опишите ваш вопрос или требования..."
+                  rows={5}
+                  value={formData.message}
+                  onChange={(value) => setFormData(prev => ({ ...prev, message: value }))}
+                  validationRules={{
+                    required: true,
+                    minLength: 10,
+                    maxLength: 1000,
+                    message: 'Сообщение должно содержать от 10 до 1000 символов'
+                  }}
+                  showCharCount
+                  onValidationChange={(result) => 
+                    setValidationState(prev => ({ ...prev, message: result.isValid }))
+                  }
+                />
                 
                 <div className="flex items-start gap-3">
-                  <input type="checkbox" id="privacy" className="mt-1" required />
+                  <input 
+                    type="checkbox" 
+                    id="privacy" 
+                    className="mt-1" 
+                    checked={formData.privacy}
+                    onChange={(e) => setFormData(prev => ({ ...prev, privacy: e.target.checked }))}
+                    required 
+                  />
                   <label htmlFor="privacy" className="text-sm text-muted-foreground">
                     Согласен с <Link href="/privacy" className="text-primary hover:underline">политикой конфиденциальности</Link> и обработкой персональных данных
                   </label>
                 </div>
                 
-                <Button type="submit" size="lg" className="w-full">
+                <Button type="submit" size="lg" className="w-full" disabled={!isFormValid || isSubmitting}>
                   <Send className="mr-2 w-5 h-5" />
-                  Отправить сообщение
+                  {isSubmitting ? 'Отправка...' : 'Отправить сообщение'}
                 </Button>
               </form>
             </div>

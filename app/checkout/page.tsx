@@ -7,6 +7,9 @@ import { useCartStore } from '@/store/cart'
 import { useAuthStore } from '@/store/auth'
 import { formatPrice } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { ValidatedTextarea } from '@/components/ui/ValidatedTextarea'
+import { validateEmail, validatePhone, validateName, validateAddress, validateCity, validateZipCode, formatPhone } from '@/lib/validation'
 
 interface ShippingAddress {
   street: string
@@ -36,6 +39,16 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orderId, setOrderId] = useState<string | null>(null)
+  
+  // Состояние валидации
+  const [validationState, setValidationState] = useState({
+    customerName: false,
+    customerEmail: false,
+    customerPhone: false,
+    street: false,
+    city: false,
+    zipCode: false
+  })
   
   const [formData, setFormData] = useState<OrderFormData>({
     customerName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '',
@@ -105,39 +118,53 @@ export default function CheckoutPage() {
 
   // Валидация формы
   const validateForm = (): boolean => {
-    if (!formData.customerName.trim()) {
-      setError('Введите ваше имя')
+    // Проверяем все поля через наши валидаторы
+    const nameValid = validateName(formData.customerName, 'Имя')
+    const emailValid = validateEmail(formData.customerEmail)
+    const phoneValid = validatePhone(formData.customerPhone)
+    const streetValid = validateAddress(formData.shippingAddress.street)
+    const cityValid = validateCity(formData.shippingAddress.city)
+    const zipValid = validateZipCode(formData.shippingAddress.zipCode)
+
+    if (!nameValid.isValid) {
+      setError(nameValid.error || 'Проверьте имя')
       return false
     }
     
-    if (!formData.customerEmail.trim()) {
-      setError('Введите email')
+    if (!emailValid.isValid) {
+      setError(emailValid.error || 'Проверьте email')
       return false
     }
     
-    if (!formData.customerPhone.trim()) {
-      setError('Введите номер телефона')
+    if (!phoneValid.isValid) {
+      setError(phoneValid.error || 'Проверьте телефон')
       return false
     }
     
-    if (!formData.shippingAddress.street.trim()) {
-      setError('Введите адрес доставки')
+    if (!streetValid.isValid) {
+      setError(streetValid.error || 'Проверьте адрес')
       return false
     }
     
-    if (!formData.shippingAddress.city.trim()) {
-      setError('Введите город')
+    if (!cityValid.isValid) {
+      setError(cityValid.error || 'Проверьте город')
       return false
     }
     
-    if (!formData.shippingAddress.zipCode.trim()) {
-      setError('Введите почтовый индекс')
+    if (!zipValid.isValid) {
+      setError(zipValid.error || 'Проверьте индекс')
       return false
     }
 
     setError('')
     return true
   }
+  
+  // Проверка валидности шага 1
+  const isStep1Valid = validationState.customerName && validationState.customerEmail && validationState.customerPhone
+  
+  // Проверка валидности шага 2
+  const isStep2Valid = validationState.street && validationState.city && validationState.zipCode
 
   // Создание заказа
   const createOrder = async () => {
@@ -361,50 +388,64 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold mb-6">Контактные данные</h2>
                 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Полное имя *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.customerName}
-                      onChange={(e) => updateFormData('customerName', e.target.value)}
-                      className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="Иван Иванов"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Полное имя"
+                    type="text"
+                    value={formData.customerName}
+                    onChange={(value) => updateFormData('customerName', value)}
+                    placeholder="Иван Иванов"
+                    validationRules={{
+                      required: true,
+                      minLength: 2,
+                      maxLength: 100,
+                      pattern: /[а-яА-ЯёЁa-zA-Z]/,
+                      message: 'Имя должно содержать минимум 2 символа'
+                    }}
+                    onValidationChange={(result) => 
+                      setValidationState(prev => ({ ...prev, customerName: result.isValid }))
+                    }
+                  />
                   
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.customerEmail}
-                      onChange={(e) => updateFormData('customerEmail', e.target.value)}
-                      className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="ivan@example.com"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Email"
+                    type="email"
+                    value={formData.customerEmail}
+                    onChange={(value) => updateFormData('customerEmail', value)}
+                    placeholder="ivan@example.com"
+                    validationRules={{
+                      required: true,
+                      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Введите корректный email адрес'
+                    }}
+                    onValidationChange={(result) => 
+                      setValidationState(prev => ({ ...prev, customerEmail: result.isValid }))
+                    }
+                  />
                   
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Телефон *
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.customerPhone}
-                      onChange={(e) => updateFormData('customerPhone', e.target.value)}
-                      className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="+7 (900) 123-45-67"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Телефон"
+                    type="tel"
+                    value={formData.customerPhone}
+                    onChange={(value) => {
+                      const formatted = formatPhone(value)
+                      updateFormData('customerPhone', formatted)
+                    }}
+                    placeholder="+7 (900) 123-45-67"
+                    validationRules={{
+                      required: true,
+                      minLength: 11,
+                      message: 'Введите корректный номер телефона (11 цифр)'
+                    }}
+                    onValidationChange={(result) => 
+                      setValidationState(prev => ({ ...prev, customerPhone: result.isValid }))
+                    }
+                  />
                 </div>
 
                 <div className="flex justify-end mt-6">
                   <button
                     onClick={() => setCurrentStep(2)}
-                    disabled={!formData.customerName || !formData.customerEmail || !formData.customerPhone}
+                    disabled={!isStep1Valid}
                     className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Далее
@@ -419,59 +460,75 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold mb-6">Адрес доставки</h2>
                 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Улица, дом, квартира *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.shippingAddress.street}
-                      onChange={(e) => updateShippingAddress('street', e.target.value)}
-                      className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="ул. Примерная, д. 1, кв. 10"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Улица, дом, квартира"
+                    type="text"
+                    value={formData.shippingAddress.street}
+                    onChange={(value) => updateShippingAddress('street', value)}
+                    placeholder="ул. Примерная, д. 1, кв. 10"
+                    validationRules={{
+                      required: true,
+                      minLength: 5,
+                      maxLength: 200,
+                      message: 'Адрес должен содержать минимум 5 символов'
+                    }}
+                    onValidationChange={(result) => 
+                      setValidationState(prev => ({ ...prev, street: result.isValid }))
+                    }
+                  />
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Город *
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.shippingAddress.city}
-                        onChange={(e) => updateShippingAddress('city', e.target.value)}
-                        className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                        placeholder="Москва"
-                      />
-                    </div>
+                    <ValidatedInput
+                      label="Город"
+                      type="text"
+                      value={formData.shippingAddress.city}
+                      onChange={(value) => updateShippingAddress('city', value)}
+                      placeholder="Москва"
+                      validationRules={{
+                        required: true,
+                        minLength: 2,
+                        pattern: /^[а-яА-ЯёЁa-zA-Z\s\-]+$/,
+                        message: 'Название города должно содержать только буквы'
+                      }}
+                      onValidationChange={(result) => 
+                        setValidationState(prev => ({ ...prev, city: result.isValid }))
+                      }
+                    />
                     
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Почтовый индекс *
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.shippingAddress.zipCode}
-                        onChange={(e) => updateShippingAddress('zipCode', e.target.value)}
-                        className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                        placeholder="123456"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Комментарий к заказу
-                    </label>
-                    <textarea
-                      value={formData.notes}
-                      onChange={(e) => updateFormData('notes', e.target.value)}
-                      rows={3}
-                      className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="Дополнительная информация для курьера..."
+                    <ValidatedInput
+                      label="Почтовый индекс"
+                      type="text"
+                      value={formData.shippingAddress.zipCode}
+                      onChange={(value) => {
+                        const digitsOnly = value.replace(/\D/g, '').slice(0, 6)
+                        updateShippingAddress('zipCode', digitsOnly)
+                      }}
+                      placeholder="123456"
+                      validationRules={{
+                        required: true,
+                        minLength: 6,
+                        maxLength: 6,
+                        pattern: /^\d{6}$/,
+                        message: 'Почтовый индекс должен содержать 6 цифр'
+                      }}
+                      onValidationChange={(result) => 
+                        setValidationState(prev => ({ ...prev, zipCode: result.isValid }))
+                      }
                     />
                   </div>
+                  
+                  <ValidatedTextarea
+                    label="Комментарий к заказу"
+                    value={formData.notes}
+                    onChange={(value) => updateFormData('notes', value)}
+                    rows={3}
+                    placeholder="Дополнительная информация для курьера..."
+                    validationRules={{
+                      required: false,
+                      maxLength: 500
+                    }}
+                    showCharCount
+                  />
                 </div>
 
                 <div className="flex justify-between mt-6">
@@ -483,7 +540,7 @@ export default function CheckoutPage() {
                   </button>
                   <button
                     onClick={() => setCurrentStep(3)}
-                    disabled={!formData.shippingAddress.street || !formData.shippingAddress.city || !formData.shippingAddress.zipCode}
+                    disabled={!isStep2Valid}
                     className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Далее
