@@ -111,7 +111,7 @@ export async function DELETE(request: NextRequest) {
         select: { id: true }
       })
 
-      const productIds = products.map(p => p.id)
+      const productIds = products.map((p: { id: string }) => p.id)
 
       // Удаляем все связанные записи
       await prisma.cartItem.deleteMany({
