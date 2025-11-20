@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useAuthStore } from '@/store/auth'
 import Link from 'next/link'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { ValidatedTextarea } from '@/components/ui/ValidatedTextarea'
 
 interface Category {
   id: string  // CUID из базы данных
@@ -36,6 +38,11 @@ export default function CreateProductPage() {
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [validationState, setValidationState] = useState({
+    name: false,
+    description: false,
+    price: false
+  })
 
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
@@ -167,36 +174,53 @@ export default function CreateProductPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Название товара *</label>
-                <Input
-                  name="name"
+                <ValidatedInput
+                  label="Название товара"
                   value={formData.name}
-                  onChange={handleInputChange}
+                  onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
                   placeholder="Введите название товара"
-                  required
+                  validationRules={{
+                    required: true,
+                    minLength: 3,
+                    maxLength: 200,
+                    message: 'Название должно содержать от 3 до 200 символов'
+                  }}
+                  onValidationChange={(result) => 
+                    setValidationState(prev => ({ ...prev, name: result.isValid }))
+                  }
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Краткое описание</label>
-                <Input
-                  name="shortDescription"
+                <ValidatedInput
+                  label="Краткое описание"
                   value={formData.shortDescription}
-                  onChange={handleInputChange}
+                  onChange={(value) => setFormData(prev => ({ ...prev, shortDescription: value }))}
                   placeholder="Краткое описание для карточки товара"
+                  validationRules={{
+                    required: false,
+                    maxLength: 200
+                  }}
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Полное описание *</label>
-                <textarea
-                  name="description"
+                <ValidatedTextarea
+                  label="Полное описание"
                   value={formData.description}
-                  onChange={handleInputChange}
+                  onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
                   placeholder="Подробное описание товара"
                   rows={4}
-                  className="w-full p-3 border rounded-lg resize-none"
-                  required
+                  validationRules={{
+                    required: true,
+                    minLength: 10,
+                    maxLength: 2000,
+                    message: 'Описание должно содержать от 10 до 2000 символов'
+                  }}
+                  showCharCount
+                  onValidationChange={(result) => 
+                    setValidationState(prev => ({ ...prev, description: result.isValid }))
+                  }
                 />
               </div>
 
@@ -240,38 +264,52 @@ export default function CreateProductPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-2">Цена *</label>
-                <Input
-                  name="price"
+                <ValidatedInput
+                  label="Цена"
                   type="number"
                   step="0.01"
                   value={formData.price}
-                  onChange={handleInputChange}
+                  onChange={(value) => setFormData(prev => ({ ...prev, price: value }))}
                   placeholder="0.00"
-                  required
+                  validationRules={{
+                    required: true,
+                    custom: (value) => parseFloat(value) > 0,
+                    message: 'Цена должна быть больше 0'
+                  }}
+                  onValidationChange={(result) => 
+                    setValidationState(prev => ({ ...prev, price: result.isValid }))
+                  }
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Старая цена</label>
-                <Input
-                  name="originalPrice"
+                <ValidatedInput
+                  label="Старая цена"
                   type="number"
                   step="0.01"
                   value={formData.originalPrice}
-                  onChange={handleInputChange}
+                  onChange={(value) => setFormData(prev => ({ ...prev, originalPrice: value }))}
                   placeholder="0.00"
+                  validationRules={{
+                    required: false,
+                    custom: (value) => !value || parseFloat(value) > 0,
+                    message: 'Цена должна быть больше 0'
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Количество на складе</label>
-                <Input
-                  name="stockQuantity"
+                <ValidatedInput
+                  label="Количество на складе"
                   type="number"
                   value={formData.stockQuantity}
-                  onChange={handleInputChange}
+                  onChange={(value) => setFormData(prev => ({ ...prev, stockQuantity: value }))}
                   placeholder="1"
+                  validationRules={{
+                    required: true,
+                    custom: (value) => parseInt(value) >= 0,
+                    message: 'Количество должно быть >= 0'
+                  }}
                 />
               </div>
             </div>
@@ -330,7 +368,11 @@ export default function CreateProductPage() {
 
           {/* Submit */}
           <div className="flex gap-4">
-            <Button type="submit" disabled={isLoading} className="flex-1 md:flex-none">
+            <Button 
+              type="submit" 
+              disabled={isLoading || !validationState.name || !validationState.description || !validationState.price || !formData.categoryId} 
+              className="flex-1 md:flex-none"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

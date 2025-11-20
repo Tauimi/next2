@@ -5,6 +5,8 @@ import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { validateEmail, validatePassword } from '@/lib/validation'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -14,9 +16,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [validationState, setValidationState] = useState({
+    email: false,
+    password: false
+  })
   
   const router = useRouter()
   const { login } = useAuthStore()
+  
+  const isFormValid = validationState.email && validationState.password
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -122,29 +130,26 @@ export default function LoginPage() {
             )}
 
             {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-secondary-700 mb-2">
-                Email адрес
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="input pl-10"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+            <ValidatedInput
+              label="Email адрес"
+              type="email"
+              placeholder="your@email.com"
+              value={formData.email}
+              onChange={(value) => setFormData({ ...formData, email: value })}
+              validationRules={{
+                required: true,
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Введите корректный email адрес'
+              }}
+              onValidationChange={(result) => 
+                setValidationState(prev => ({ ...prev, email: result.isValid }))
+              }
+            />
 
             {/* Пароль */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-secondary-700 mb-2">
-                Пароль
+                Пароль *
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
@@ -156,7 +161,11 @@ export default function LoginPage() {
                   className="input pl-10 pr-10"
                   placeholder="••••••••"
                   value={formData.password}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    handleChange(e)
+                    const result = validatePassword(e.target.value)
+                    setValidationState(prev => ({ ...prev, password: result.isValid }))
+                  }}
                 />
                 <button
                   type="button"
@@ -188,8 +197,8 @@ export default function LoginPage() {
             {/* Кнопка входа */}
             <button
               type="submit"
-              disabled={loading}
-              className="btn-primary w-full"
+              disabled={loading || !isFormValid}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Вход...' : 'Войти'}
             </button>

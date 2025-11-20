@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { Mail, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  const [isEmailValid, setIsEmailValid] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,30 +79,25 @@ export default function ForgotPasswordPage() {
             )}
 
             {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-secondary-700 mb-2">
-                Email адрес
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="input pl-10"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
+            <ValidatedInput
+              label="Email адрес"
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(value) => setEmail(value)}
+              validationRules={{
+                required: true,
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Введите корректный email адрес'
+              }}
+              onValidationChange={(result) => setIsEmailValid(result.isValid)}
+            />
 
             {/* Кнопка отправки */}
             <button
               type="submit"
-              disabled={loading}
-              className="btn-primary w-full"
+              disabled={loading || !isEmailValid}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Отправка...' : 'Отправить инструкции'}
             </button>

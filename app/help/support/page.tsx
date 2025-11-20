@@ -1,14 +1,52 @@
-import { Metadata } from 'next'
+'use client'
+
+import { useState } from 'react'
 import { Phone, Mail, MessageCircle, Clock, Users, Headphones } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-
-export const metadata: Metadata = {
-  title: 'Техническая поддержка - TechnoMart',
-  description: 'Техническая поддержка TechnoMart. Помощь с товарами, консультации, решение проблем.',
-}
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { ValidatedTextarea } from '@/components/ui/ValidatedTextarea'
+import { formatPhone } from '@/lib/validation'
 
 export default function SupportPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: 'Выберите тему',
+    message: ''
+  })
+
+  const [validationState, setValidationState] = useState({
+    name: false,
+    email: false,
+    phone: false,
+    message: false
+  })
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const isFormValid = Object.values(validationState).every(v => v) && formData.subject !== 'Выберите тему'
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isFormValid) return
+
+    setIsSubmitting(true)
+    console.log('Support request:', formData)
+    
+    setTimeout(() => {
+      alert('Обращение отправлено! Мы ответим вам в ближайшее время.')
+      setIsSubmitting(false)
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        subject: 'Выберите тему',
+        message: ''
+      })
+    }, 1000)
+  }
+
   return (
     <main className="min-h-screen">
       {/* Hero */}
@@ -167,26 +205,70 @@ export default function SupportPage() {
               </p>
             </div>
 
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Имя</label>
-                  <Input placeholder="Ваше имя" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
-                  <Input type="email" placeholder="your@email.com" />
-                </div>
+                <ValidatedInput
+                  label="Имя"
+                  placeholder="Ваше имя"
+                  value={formData.name}
+                  onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
+                  validationRules={{
+                    required: true,
+                    minLength: 2,
+                    maxLength: 100,
+                    pattern: /[а-яА-ЯёЁa-zA-Z]/,
+                    message: 'Имя должно содержать минимум 2 символа'
+                  }}
+                  onValidationChange={(result) => 
+                    setValidationState(prev => ({ ...prev, name: result.isValid }))
+                  }
+                />
+                
+                <ValidatedInput
+                  label="Email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={formData.email}
+                  onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
+                  validationRules={{
+                    required: true,
+                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: 'Введите корректный email адрес'
+                  }}
+                  onValidationChange={(result) => 
+                    setValidationState(prev => ({ ...prev, email: result.isValid }))
+                  }
+                />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Телефон</label>
-                <Input placeholder="+7 (___) ___-__-__" />
-              </div>
+              <ValidatedInput
+                label="Телефон"
+                type="tel"
+                placeholder="+7 (900) 123-45-67"
+                value={formData.phone}
+                onChange={(value) => {
+                  const formatted = formatPhone(value)
+                  setFormData(prev => ({ ...prev, phone: formatted }))
+                }}
+                validationRules={{
+                  required: true,
+                  minLength: 11,
+                  message: 'Введите корректный номер телефона'
+                }}
+                onValidationChange={(result) => 
+                  setValidationState(prev => ({ ...prev, phone: result.isValid }))
+                }
+              />
 
               <div>
-                <label className="block text-sm font-medium mb-2">Тема обращения</label>
-                <select className="w-full p-3 border rounded-lg">
+                <label className="block text-sm font-medium mb-2">
+                  Тема обращения <span className="text-red-500">*</span>
+                </label>
+                <select 
+                  className="w-full p-3 border rounded-lg"
+                  value={formData.subject}
+                  onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+                >
                   <option>Выберите тему</option>
                   <option>Помощь с выбором товара</option>
                   <option>Техническая поддержка</option>
@@ -197,17 +279,26 @@ export default function SupportPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Сообщение</label>
-                <textarea 
-                  rows={6}
-                  className="w-full p-3 border rounded-lg resize-none"
-                  placeholder="Опишите вашу проблему или вопрос подробно..."
-                ></textarea>
-              </div>
+              <ValidatedTextarea
+                label="Сообщение"
+                rows={6}
+                placeholder="Опишите вашу проблему или вопрос подробно..."
+                value={formData.message}
+                onChange={(value) => setFormData(prev => ({ ...prev, message: value }))}
+                validationRules={{
+                  required: true,
+                  minLength: 20,
+                  maxLength: 1000,
+                  message: 'Сообщение должно содержать от 20 до 1000 символов'
+                }}
+                showCharCount
+                onValidationChange={(result) => 
+                  setValidationState(prev => ({ ...prev, message: result.isValid }))
+                }
+              />
 
-              <Button className="w-full" size="lg">
-                Отправить обращение
+              <Button type="submit" className="w-full" size="lg" disabled={!isFormValid || isSubmitting}>
+                {isSubmitting ? 'Отправка...' : 'Отправить обращение'}
               </Button>
             </form>
           </div>

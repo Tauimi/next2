@@ -4,7 +4,9 @@ import { useState } from 'react'
 import { Metadata } from 'next'
 import { Wrench, Truck, Shield, Phone, Clock, Users, Star, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { ValidatedTextarea } from '@/components/ui/ValidatedTextarea'
+import { formatPhone } from '@/lib/validation'
 
 
 
@@ -88,6 +90,23 @@ const advantages = [
 
 export default function ServicesPage() {
   const [selectedService, setSelectedService] = useState('')
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    message: ''
+  })
+  
+  const [validationState, setValidationState] = useState({
+    name: false,
+    phone: false,
+    email: false,
+    message: false
+  })
+  
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const isFormValid = Object.values(validationState).every(v => v)
 
   const scrollToForm = (serviceName: string) => {
     setSelectedService(serviceName)
@@ -98,6 +117,21 @@ export default function ServicesPage() {
         block: 'start'
       })
     }
+  }
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isFormValid) return
+
+    setIsSubmitting(true)
+    console.log('Service order:', { ...formData, service: selectedService })
+    
+    setTimeout(() => {
+      alert('Заявка отправлена! Мы свяжемся с вами в течение 15 минут.')
+      setIsSubmitting(false)
+      setFormData({ name: '', phone: '', email: '', message: '' })
+      setSelectedService('')
+    }, 1000)
   }
 
   return (
@@ -236,12 +270,58 @@ export default function ServicesPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
-                <form className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input placeholder="Ваше имя" className="bg-white text-black" />
-                    <Input placeholder="Телефон" className="bg-white text-black" />
+                    <ValidatedInput
+                      placeholder="Ваше имя"
+                      className="bg-white text-black"
+                      value={formData.name}
+                      onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
+                      validationRules={{
+                        required: true,
+                        minLength: 2,
+                        maxLength: 100,
+                        pattern: /[а-яА-ЯёЁa-zA-Z]/,
+                        message: 'Имя должно содержать минимум 2 символа'
+                      }}
+                      onValidationChange={(result) => 
+                        setValidationState(prev => ({ ...prev, name: result.isValid }))
+                      }
+                    />
+                    <ValidatedInput
+                      type="tel"
+                      placeholder="Телефон"
+                      className="bg-white text-black"
+                      value={formData.phone}
+                      onChange={(value) => {
+                        const formatted = formatPhone(value)
+                        setFormData(prev => ({ ...prev, phone: formatted }))
+                      }}
+                      validationRules={{
+                        required: true,
+                        minLength: 11,
+                        message: 'Введите корректный номер телефона'
+                      }}
+                      onValidationChange={(result) => 
+                        setValidationState(prev => ({ ...prev, phone: result.isValid }))
+                      }
+                    />
                   </div>
-                  <Input placeholder="Email" className="bg-white text-black" />
+                  <ValidatedInput
+                    type="email"
+                    placeholder="Email"
+                    className="bg-white text-black"
+                    value={formData.email}
+                    onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
+                    validationRules={{
+                      required: true,
+                      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Введите корректный email адрес'
+                    }}
+                    onValidationChange={(result) => 
+                      setValidationState(prev => ({ ...prev, email: result.isValid }))
+                    }
+                  />
                   <select 
                     className="w-full p-3 border rounded-lg bg-white text-black"
                     value={selectedService}
@@ -254,13 +334,25 @@ export default function ServicesPage() {
                     <option value="Консультации и обучение">Консультации и обучение</option>
                     <option value="Консультация">Консультация</option>
                   </select>
-                  <textarea 
+                  <ValidatedTextarea
                     rows={4}
-                    className="w-full p-3 border rounded-lg resize-none bg-white text-black"
+                    className="bg-white text-black"
                     placeholder="Опишите ваши потребности..."
-                  ></textarea>
-                  <Button size="lg" variant="secondary" className="w-full">
-                    Отправить заявку
+                    value={formData.message}
+                    onChange={(value) => setFormData(prev => ({ ...prev, message: value }))}
+                    validationRules={{
+                      required: true,
+                      minLength: 10,
+                      maxLength: 500,
+                      message: 'Сообщение должно содержать от 10 до 500 символов'
+                    }}
+                    showCharCount
+                    onValidationChange={(result) => 
+                      setValidationState(prev => ({ ...prev, message: result.isValid }))
+                    }
+                  />
+                  <Button type="submit" size="lg" variant="secondary" className="w-full" disabled={!isFormValid || isSubmitting}>
+                    {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
                   </Button>
                 </form>
               </div>

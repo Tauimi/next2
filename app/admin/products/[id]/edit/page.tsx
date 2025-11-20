@@ -6,6 +6,8 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import Link from 'next/link'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { ValidatedTextarea } from '@/components/ui/ValidatedTextarea'
 
 interface Category {
   id: string
@@ -36,6 +38,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [validationState, setValidationState] = useState({
+    name: true, // true по умолчанию, т.к. данные загружаются с сервера
+    description: true,
+    price: true
+  })
 
   const [formData, setFormData] = useState<ProductForm>({
     name: '',

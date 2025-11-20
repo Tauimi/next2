@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useAuthStore } from '@/store/auth'
 import Link from 'next/link'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { ValidatedTextarea } from '@/components/ui/ValidatedTextarea'
 
 interface Category {
   id: number
@@ -31,6 +33,9 @@ export default function CreateCategoryPage() {
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [validationState, setValidationState] = useState({
+    name: false
+  })
 
   const [formData, setFormData] = useState<CategoryForm>({
     name: '',
@@ -163,28 +168,34 @@ export default function CreateCategoryPage() {
               <h2 className="text-xl font-semibold mb-6">Основная информация</h2>
               
               <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Название категории *</label>
-                  <Input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Введите название категории"
-                    required
-                  />
-                </div>
+                <ValidatedInput
+                  label="Название категории"
+                  value={formData.name}
+                  onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
+                  placeholder="Введите название категории"
+                  validationRules={{
+                    required: true,
+                    minLength: 2,
+                    maxLength: 100,
+                    message: 'Название должно содержать от 2 до 100 символов'
+                  }}
+                  onValidationChange={(result) => 
+                    setValidationState(prev => ({ ...prev, name: result.isValid }))
+                  }
+                />
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Описание</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Описание категории"
-                    rows={3}
-                    className="w-full p-3 border rounded-lg resize-none"
-                  />
-                </div>
+                <ValidatedTextarea
+                  label="Описание"
+                  value={formData.description}
+                  onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+                  placeholder="Описание категории"
+                  rows={3}
+                  validationRules={{
+                    required: false,
+                    maxLength: 500
+                  }}
+                  showCharCount
+                />
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Родительская категория</label>
@@ -247,7 +258,7 @@ export default function CreateCategoryPage() {
 
             {/* Submit */}
             <div className="flex gap-4">
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading || !validationState.name}>
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />

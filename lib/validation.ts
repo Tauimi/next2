@@ -203,3 +203,64 @@ export const formatPhone = (phone: string): string => {
 export const formatZipCode = (zipCode: string): string => {
   return zipCode.replace(/\D/g, '').slice(0, 6)
 }
+
+// Валидация пароля
+export const validatePassword = (password: string): ValidationResult => {
+  if (!password || password.trim() === '') {
+    return { isValid: false, error: 'Пароль обязателен для заполнения' }
+  }
+
+  if (password.length < 8) {
+    return { isValid: false, error: 'Пароль должен содержать минимум 8 символов' }
+  }
+
+  if (password.length > 100) {
+    return { isValid: false, error: 'Пароль не должен превышать 100 символов' }
+  }
+
+  // Проверка на наличие хотя бы одной цифры
+  if (!/\d/.test(password)) {
+    return { isValid: false, error: 'Пароль должен содержать хотя бы одну цифру' }
+  }
+
+  // Проверка на наличие хотя бы одной буквы
+  if (!/[a-zA-Z]/.test(password)) {
+    return { isValid: false, error: 'Пароль должен содержать хотя бы одну букву' }
+  }
+
+  return { isValid: true }
+}
+
+// Валидация подтверждения пароля
+export const validatePasswordConfirm = (password: string, confirmPassword: string): ValidationResult => {
+  if (!confirmPassword || confirmPassword.trim() === '') {
+    return { isValid: false, error: 'Подтвердите пароль' }
+  }
+
+  if (password !== confirmPassword) {
+    return { isValid: false, error: 'Пароли не совпадают' }
+  }
+
+  return { isValid: true }
+}
+
+// Валидация username
+export const validateUsername = (username: string): ValidationResult => {
+  if (!username || username.trim() === '') {
+    return { isValid: false, error: 'Логин обязателен для заполнения' }
+  }
+
+  if (username.length < 3) {
+    return { isValid: false, error: 'Логин должен содержать минимум 3 символа' }
+  }
+
+  if (username.length > 20) {
+    return { isValid: false, error: 'Логин не должен превышать 20 символов' }
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    return { isValid: false, error: 'Логин может содержать только латинские буквы, цифры и _' }
+  }
+
+  return { isValid: true }
+}

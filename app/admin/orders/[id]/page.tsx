@@ -6,6 +6,8 @@ import { ArrowLeft, Package, User, MapPin, CreditCard, Truck, Save, Loader2 } fr
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import Image from 'next/image'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { ValidatedTextarea } from '@/components/ui/ValidatedTextarea'
 
 interface OrderDetails {
   id: string
@@ -325,27 +327,31 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Трек-номер</label>
-                  <input
-                    type="text"
-                    value={formData.trackingNumber}
-                    onChange={(e) => setFormData(prev => ({ ...prev, trackingNumber: e.target.value }))}
-                    placeholder="Введите трек-номер"
-                    className="w-full p-2 border rounded-lg"
-                  />
-                </div>
+                <ValidatedInput
+                  label="Трек-номер"
+                  value={formData.trackingNumber}
+                  onChange={(value) => setFormData(prev => ({ ...prev, trackingNumber: value }))}
+                  placeholder="Введите трек-номер"
+                  validationRules={{
+                    required: false,
+                    minLength: 5,
+                    maxLength: 50,
+                    message: 'Трек-номер должен содержать от 5 до 50 символов'
+                  }}
+                />
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Примечания</label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                    placeholder="Добавьте примечания к заказу"
-                    rows={3}
-                    className="w-full p-2 border rounded-lg resize-none"
-                  />
-                </div>
+                <ValidatedTextarea
+                  label="Примечания"
+                  value={formData.notes}
+                  onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+                  placeholder="Добавьте примечания к заказу"
+                  rows={3}
+                  validationRules={{
+                    required: false,
+                    maxLength: 500
+                  }}
+                  showCharCount
+                />
 
                 <Button 
                   onClick={handleUpdate} 

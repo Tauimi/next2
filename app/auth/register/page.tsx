@@ -5,6 +5,8 @@ import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
+import { ValidatedInput } from '@/components/ui/ValidatedInput'
+import { validateEmail, validateName } from '@/lib/validation'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -15,6 +17,16 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: ''
   })
+  
+  const [validationState, setValidationState] = useState({
+    firstName: false,
+    lastName: false,
+    username: false,
+    email: false,
+    password: false,
+    confirmPassword: false
+  })
+  
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -22,6 +34,8 @@ export default function RegisterPage() {
   
   const router = useRouter()
   const { login } = useAuthStore()
+  
+  const isFormValid = Object.values(validationState).every(v => v)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -32,18 +46,18 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!isFormValid) {
+      setError('Пожалуйста, заполните все поля корректно')
+      return
+    }
+    
     setLoading(true)
     setError('')
 
     // Проверка пароля
     if (formData.password !== formData.confirmPassword) {
       setError('Пароли не совпадают')
-      setLoading(false)
-      return
-    }
-
-    if (formData.password.length < 8) {
-      setError('Пароль должен содержать минимум 8 символов')
       setLoading(false)
       return
     }
@@ -105,85 +119,75 @@ export default function RegisterPage() {
 
             {/* Имя и Фамилия */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-secondary-700 mb-2">
-                  Имя
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    required
-                    className="input pl-10"
-                    placeholder="Имя"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
+              <ValidatedInput
+                label="Имя"
+                placeholder="Имя"
+                value={formData.firstName}
+                onChange={(value) => setFormData(prev => ({ ...prev, firstName: value }))}
+                validationRules={{
+                  required: true,
+                  minLength: 2,
+                  maxLength: 50,
+                  pattern: /^[а-яА-ЯёЁa-zA-Z\s\-]+$/,
+                  message: 'Имя должно содержать только буквы (минимум 2 символа)'
+                }}
+                onValidationChange={(result) => 
+                  setValidationState(prev => ({ ...prev, firstName: result.isValid }))
+                }
+              />
 
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-secondary-700 mb-2">
-                  Фамилия
-                </label>
-                <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  required
-                  className="input"
-                  placeholder="Фамилия"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-              </div>
+              <ValidatedInput
+                label="Фамилия"
+                placeholder="Фамилия"
+                value={formData.lastName}
+                onChange={(value) => setFormData(prev => ({ ...prev, lastName: value }))}
+                validationRules={{
+                  required: true,
+                  minLength: 2,
+                  maxLength: 50,
+                  pattern: /^[а-яА-ЯёЁa-zA-Z\s\-]+$/,
+                  message: 'Фамилия должна содержать только буквы (минимум 2 символа)'
+                }}
+                onValidationChange={(result) => 
+                  setValidationState(prev => ({ ...prev, lastName: result.isValid }))
+                }
+              />
             </div>
 
             {/* Username */}
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-secondary-700 mb-2">
-                Логин
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  className="input pl-10"
-                  placeholder="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  minLength={3}
-                />
-              </div>
-              <p className="mt-1 text-xs text-secondary-500">
-                Минимум 3 символа
-              </p>
-            </div>
+            <ValidatedInput
+              label="Логин"
+              placeholder="username"
+              value={formData.username}
+              onChange={(value) => setFormData(prev => ({ ...prev, username: value }))}
+              validationRules={{
+                required: true,
+                minLength: 3,
+                maxLength: 20,
+                pattern: /^[a-zA-Z0-9_]+$/,
+                message: 'Логин должен содержать только латинские буквы, цифры и _ (минимум 3 символа)'
+              }}
+              onValidationChange={(result) => 
+                setValidationState(prev => ({ ...prev, username: result.isValid }))
+              }
+            />
 
             {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-secondary-700 mb-2">
-                Email адрес
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="input pl-10"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+            <ValidatedInput
+              label="Email адрес"
+              type="email"
+              placeholder="your@email.com"
+              value={formData.email}
+              onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
+              validationRules={{
+                required: true,
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Введите корректный email адрес'
+              }}
+              onValidationChange={(result) => 
+                setValidationState(prev => ({ ...prev, email: result.isValid }))
+              }
+            />
 
             {/* Пароль */}
             <div>
