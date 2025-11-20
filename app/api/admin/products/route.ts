@@ -182,8 +182,12 @@ export async function PATCH(request: NextRequest) {
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured
     if (isNew !== undefined) updateData.isNew = isNew
     if (isHot !== undefined) updateData.isHot = isHot
-    if (categoryId !== undefined) updateData.categoryId = categoryId
-    if (brandId !== undefined) updateData.brandId = brandId
+    if (categoryId !== undefined) {
+      updateData.category = { connect: { id: categoryId } }
+    }
+    if (brandId !== undefined) {
+      updateData.brand = brandId ? { connect: { id: brandId } } : { disconnect: true }
+    }
 
     updateData.updatedAt = new Date()
 

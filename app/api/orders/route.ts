@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Создание заказа в транзакции
-    const order = await prisma.$transaction(async (tx) => {
+    const order = await prisma.$transaction(async (tx: any) => {
       // Создаем заказ
       const newOrder = await tx.order.create({
         data: {

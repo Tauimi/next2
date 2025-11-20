@@ -70,9 +70,9 @@ export async function GET(request: NextRequest) {
         by: ['productId'],
         _sum: { quantity: true },
         _count: { productId: true },
-        orderBy: { _sum: { quantity: 'desc' } },
+        orderBy: { _sum: { quantity: 'desc' as any } },
         take: 5
-      }),
+      }) as any,
       
       // Статистика по месяцам (последние 6 месяцев)
       prisma.$queryRaw`
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         totalUsers,
         totalRevenue: totalRevenue._sum.totalAmount || 0
       },
-      recentOrders: recentOrders.map((order) => ({
+      recentOrders: (recentOrders as any[]).map((order: any) => ({
         id: order.id,
         orderNumber: order.orderNumber,
         customerName: order.customerName,

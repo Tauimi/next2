@@ -90,8 +90,8 @@ export async function PUT(
     const order = await prisma.order.update({
       where: { id: params.id },
       data: {
-        status: statusUpper,
-        paymentStatus: paymentStatusUpper,
+        status: statusUpper as any,
+        paymentStatus: paymentStatusUpper as any,
         trackingNumber,
         notes,
         shippedAt: statusUpper === 'SHIPPED' && !body.shippedAt ? new Date() : undefined,
