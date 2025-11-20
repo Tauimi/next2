@@ -93,9 +93,9 @@ model Product {
 
   // Связи
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   brandId    String?
-  brand      Brand?   @relation(fields: [brandId], references: [id])
+  brand      Brand?   @relation(fields: [brandId], references: [id], onDelete: SetNull)
 
   // SEO
   metaTitle       String?

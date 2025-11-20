@@ -66,27 +66,84 @@ export default function AdminCategoriesPage() {
   }
 
   const deleteCategory = async (categoryId: number, categoryName: string) => {
-    if (!confirm(`Вы уверены, что хотите удалить категорию "${categoryName}"?\n\nЭто действие нельзя отменить.`)) {
-      return
-    }
+    const category = categories.find(c => c.id === categoryId)
+    
+    if (!category) return
 
-    try {
-      const response = await fetch(`/api/categories/${categoryId}`, {
-        method: 'DELETE'
-      })
+    // Проверяем наличие товаров
+    if (category._count.products > 0) {
+      const action = confirm(
+        `Категория "${categoryName}" содержит ${category._count.products} товаров.\n\n` +
+        `Выберите действие:\n` +
+        `OK - Переместить товары в другую категорию\n` +
+        `Отмена - Отменить удаление`
+      )
 
-      const result = await response.json()
+      if (!action) return
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete category')
+      // Показываем список категорий для перемещения
+      const otherCategories = categories.filter(c => c.id !== categoryId)
+      if (otherCategories.length === 0) {
+        alert('Нет других категорий для перемещения товаров. Сначала создайте другую категорию.')
+        return
       }
 
-      // Удаляем из локального состояния
-      setCategories(prev => prev.filter(category => category.id !== categoryId))
-      alert('Категория успешно удалена')
-    } catch (error) {
-      console.error('Error deleting category:', error)
-      alert(error instanceof Error ? error.message : 'Ошибка удаления категории')
+      const categoryList = otherCategories.map((c, i) => `${i + 1}. ${c.name}`).join('\n')
+      const targetIndex = prompt(
+        `Выберите категорию для перемещения товаров (введите номер):\n\n${categoryList}`
+      )
+
+      if (!targetIndex) return
+
+      const index = parseInt(targetIndex) - 1
+      if (index < 0 || index >= otherCategories.length) {
+        alert('Неверный номер категории')
+        return
+      }
+
+      const targetCategoryId = otherCategories[index].id
+
+      try {
+        const response = await fetch(`/api/categories/${categoryId}?moveTo=${targetCategoryId}`, {
+          method: 'DELETE'
+        })
+
+        const result = await response.json()
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to delete category')
+        }
+
+        setCategories(prev => prev.filter(c => c.id !== categoryId))
+        alert(`Категория удалена. Товары перемещены в "${otherCategories[index].name}"`)
+        fetchCategories() // Обновляем список для актуализации счетчиков
+      } catch (error) {
+        console.error('Error deleting category:', error)
+        alert(error instanceof Error ? error.message : 'Ошибка удаления категории')
+      }
+    } else {
+      // Категория пустая - простое удаление
+      if (!confirm(`Вы уверены, что хотите удалить категорию "${categoryName}"?`)) {
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/categories/${categoryId}`, {
+          method: 'DELETE'
+        })
+
+        const result = await response.json()
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to delete category')
+        }
+
+        setCategories(prev => prev.filter(c => c.id !== categoryId))
+        alert('Категория успешно удалена')
+      } catch (error) {
+        console.error('Error deleting category:', error)
+        alert(error instanceof Error ? error.message : 'Ошибка удаления категории')
+      }
     }
   }
 

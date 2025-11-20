@@ -164,6 +164,9 @@ export async function DELETE(
     await requireAdmin(request)
 
     const { slug: idOrSlug } = params
+    const { searchParams } = new URL(request.url)
+    const force = searchParams.get('force') === 'true'
+    const moveToCategoryId = searchParams.get('moveTo')
     
     // Для удаления используем только ID
     if (!isId(idOrSlug)) {
@@ -178,6 +181,12 @@ export async function DELETE(
       where: { id: idOrSlug },
       include: {
         products: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        children: {
           select: {
             id: true,
             name: true
@@ -199,35 +208,88 @@ export async function DELETE(
       )
     }
 
-    // Проверяем есть ли товары в категории
-    console.log('Category products:', existingCategory.products)
-    console.log('Category _count.products:', existingCategory._count.products)
-    
-    if (existingCategory.products.length > 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: `Cannot delete category with ${existingCategory.products.length} products: ${existingCategory.products.map(p => p.name).join(', ')}` 
-        },
-        { status: 400 }
-      )
-    }
+    console.log('Deleting category:', {
+      id: existingCategory.id,
+      name: existingCategory.name,
+      productsCount: existingCategory._count.products,
+      childrenCount: existingCategory._count.children,
+      force,
+      moveToCategoryId
+    })
 
     // Проверяем есть ли подкатегории
     if (existingCategory._count.children > 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: `Cannot delete category with ${existingCategory._count.children} subcategories. Please delete subcategories first.` 
-        },
-        { status: 400 }
-      )
+      if (!force) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: `Cannot delete category with ${existingCategory._count.children} subcategories: ${existingCategory.children.map((c: { id: string; name: string }) => c.name).join(', ')}. Use force=true to move them to parent category.`,
+            hasChildren: true,
+            children: existingCategory.children
+          },
+          { status: 400 }
+        )
+      }
+      
+      // Перемещаем подкатегории к родителю удаляемой категории
+      await prisma.category.updateMany({
+        where: { parentId: idOrSlug },
+        data: { parentId: existingCategory.parentId }
+      })
+      
+      console.log(`Moved ${existingCategory._count.children} subcategories to parent`)
+    }
+
+    // Проверяем есть ли товары в категории
+    if (existingCategory._count.products > 0) {
+      if (!force && !moveToCategoryId) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: `Cannot delete category with ${existingCategory._count.products} products: ${existingCategory.products.map((p: { id: string; name: string }) => p.name).join(', ')}. Use force=true to delete products or provide moveTo parameter.`,
+            hasProducts: true,
+            products: existingCategory.products
+          },
+          { status: 400 }
+        )
+      }
+
+      if (moveToCategoryId) {
+        // Проверяем существование целевой категории
+        const targetCategory = await prisma.category.findUnique({
+          where: { id: moveToCategoryId }
+        })
+
+        if (!targetCategory) {
+          return NextResponse.json(
+            { success: false, error: 'Target category not found' },
+            { status: 404 }
+          )
+        }
+
+        // Перемещаем товары в другую категорию
+        await prisma.product.updateMany({
+          where: { categoryId: idOrSlug },
+          data: { categoryId: moveToCategoryId }
+        })
+        
+        console.log(`Moved ${existingCategory._count.products} products to category ${targetCategory.name}`)
+      } else if (force) {
+        // Удаляем все товары в категории (каскадное удаление)
+        await prisma.product.deleteMany({
+          where: { categoryId: idOrSlug }
+        })
+        
+        console.log(`Deleted ${existingCategory._count.products} products`)
+      }
     }
 
     // Удаляем категорию
     await prisma.category.delete({
       where: { id: idOrSlug }
     })
+
+    console.log('Category deleted successfully')
 
     return NextResponse.json({
       success: true,
@@ -237,11 +299,24 @@ export async function DELETE(
   } catch (error) {
     console.error('Delete category error:', error)
     
-    if (error instanceof Error && error.message.includes('Access denied')) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 403 }
-      )
+    if (error instanceof Error) {
+      if (error.message.includes('Access denied')) {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 403 }
+        )
+      }
+      
+      // Обработка ошибок Prisma
+      if (error.message.includes('Foreign key constraint')) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Cannot delete category: it has related products. Please move or delete products first.' 
+          },
+          { status: 400 }
+        )
+      }
     }
 
     return NextResponse.json(
