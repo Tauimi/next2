@@ -92,8 +92,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
     })
 
+    interface ReviewWithRating {
+      rating: number
+    }
+    
     const averageRating = reviews.length > 0 
-      ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length
+      ? reviews.reduce((sum: number, review: ReviewWithRating) => sum + review.rating, 0) / reviews.length
       : 0
 
     const totalReviews = reviews.length

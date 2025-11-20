@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         totalUsers,
         totalRevenue: totalRevenue._sum.totalAmount || 0
       },
-      recentOrders: recentOrders.map((order: any) => ({
+      recentOrders: recentOrders.map((order) => ({
         id: order.id,
         orderNumber: order.orderNumber,
         customerName: order.customerName,

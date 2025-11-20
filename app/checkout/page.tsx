@@ -99,7 +99,7 @@ export default function CheckoutPage() {
   }, [items.length, router, orderId])
 
   // Обновление полей формы
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value

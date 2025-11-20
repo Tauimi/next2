@@ -165,7 +165,7 @@ export default function ProfilePage() {
 
   const profileSections: Array<{
     title: string
-    icon: any
+    icon: React.ComponentType<{ className?: string }>
     fields: EditableField[]
   }> = [
     {

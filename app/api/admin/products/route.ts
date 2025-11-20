@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserFromRequest } from '@/lib/auth'
+import { Prisma } from '@prisma/client'
 
 // Указываем что роут должен быть динамическим
 export const dynamic = 'force-dynamic'
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Построение фильтров
-    const where: any = {}
+    const where: Prisma.ProductWhereInput = {}
     
     if (categoryId) {
       where.categoryId = categoryId
@@ -168,7 +169,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Подготавливаем данные для обновления
-    const updateData: any = {}
+    const updateData: Prisma.ProductUpdateInput = {}
     
     if (name !== undefined) updateData.name = name
     if (description !== undefined) updateData.description = description

@@ -60,13 +60,14 @@ export default function ProductCard({
     try {
       await addToCart(product.id, 1)
       toast.success('Товар добавлен в корзину!')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Add to cart error:', error)
-      if (error.message?.includes('401') || error.message?.includes('авторизации')) {
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка'
+      if (errorMessage.includes('401') || errorMessage.includes('авторизации')) {
         toast.warning('Для добавления товаров в корзину необходимо войти в аккаунт')
         router.push('/auth/login')
       } else {
-        toast.error(error.message || 'Ошибка при добавлении товара в корзину')
+        toast.error(errorMessage || 'Ошибка при добавлении товара в корзину')
       }
     } finally {
       setIsAdding(false)

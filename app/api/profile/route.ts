@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserFromRequest } from '@/lib/auth'
+import { Prisma } from '@prisma/client'
 
 // Указываем что роут должен быть динамическим
 export const dynamic = 'force-dynamic'
@@ -77,7 +78,7 @@ export async function PUT(request: NextRequest) {
     } = body
 
     // Валидация данных
-    const updateData: any = {}
+    const updateData: Prisma.UserUpdateInput = {}
 
     if (firstName !== undefined) {
       updateData.firstName = firstName.trim()

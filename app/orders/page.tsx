@@ -47,7 +47,7 @@ interface Order {
 const getStatusInfo = (status: OrderStatus | string) => {
   const statusUpper = String(status).toUpperCase()
   
-  const statusMap: Record<string, { label: string; color: string; icon: any }> = {
+  const statusMap: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
     'PENDING': { 
       label: 'Ожидает подтверждения', 
       color: 'bg-yellow-100 text-yellow-800',

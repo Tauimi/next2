@@ -55,8 +55,14 @@ export default function QuickAddProduct() {
       
       if (categoriesData.success && categoriesData.data) {
         // Ищем категорию по slug
+        interface CategoryData {
+          id: string
+          slug: string
+          name: string
+        }
+        
         const existingCategory = categoriesData.data.find(
-          (cat: any) => cat.slug === formData.categoryId
+          (cat: CategoryData) => cat.slug === formData.categoryId
         )
         
         if (existingCategory) {

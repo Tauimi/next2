@@ -17,7 +17,7 @@ export async function GET() {
     }
 
     // Проверка БД подключения
-    let dbCheck: any = { status: 'unknown' }
+    let dbCheck: Record<string, unknown> = { status: 'unknown' }
     try {
       const start = Date.now()
       await prisma.$queryRaw`SELECT 1`
@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     // Проверка таблиц
-    let tablesCheck: any = { status: 'unknown' }
+    let tablesCheck: Record<string, unknown> = { status: 'unknown' }
     try {
       const userCount = await prisma.user.count()
       const productCount = await prisma.product.count()
@@ -54,7 +54,7 @@ export async function GET() {
     }
 
     // Проверка JWT
-    let jwtCheck: any = { status: 'unknown' }
+    let jwtCheck: Record<string, unknown> = { status: 'unknown' }
     try {
       const { createToken, verifyToken } = await import('@/lib/auth')
       const testToken = createToken({
@@ -96,19 +96,24 @@ export async function GET() {
   }
 }
 
-function getRecommendations(env: any, db: any, tables: any, jwt: any): string[] {
+function getRecommendations(
+  env: Record<string, unknown>, 
+  db: Record<string, unknown>, 
+  tables: Record<string, unknown>, 
+  jwt: Record<string, unknown>
+): string[] {
   const recommendations: string[] = []
 
   // Проверка переменных окружения
   if (!env.hasNextAuthSecret) {
     recommendations.push('❌ CRITICAL: NEXTAUTH_SECRET is missing! Add it to Vercel Environment Variables.')
-  } else if (env.nextAuthSecretLength < 32) {
+  } else if (typeof env.nextAuthSecretLength === 'number' && env.nextAuthSecretLength < 32) {
     recommendations.push('⚠️ WARNING: NEXTAUTH_SECRET is too short (should be at least 32 characters).')
   }
 
   if (!env.hasNextAuthUrl) {
     recommendations.push('❌ CRITICAL: NEXTAUTH_URL is missing! Add it to Vercel Environment Variables.')
-  } else if (!env.nextAuthUrl?.startsWith('https://')) {
+  } else if (typeof env.nextAuthUrl === 'string' && !env.nextAuthUrl.startsWith('https://')) {
     recommendations.push('⚠️ WARNING: NEXTAUTH_URL should start with https:// in production.')
   }
 
