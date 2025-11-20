@@ -306,13 +306,13 @@ export default function ProjectsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-primary to-accent text-white">
+      <section className="py-16 section-gradient">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-white">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
               Готовы реализовать ваш проект?
             </h2>
-            <p className="text-xl mb-8 opacity-90 text-white">
+            <p className="text-xl mb-8 opacity-90">
               Получите бесплатную консультацию и расчет стоимости проекта
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

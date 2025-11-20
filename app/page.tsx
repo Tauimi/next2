@@ -392,7 +392,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-primary to-accent text-white">
+      <section className="py-16 section-gradient">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -400,10 +400,10 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="max-w-3xl mx-auto"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-white">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
               Нужна консультация?
             </h2>
-            <p className="text-xl mb-8 opacity-90 text-white">
+            <p className="text-xl mb-8 opacity-90">
               Наши специалисты помогут выбрать идеальную технику для ваших задач
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

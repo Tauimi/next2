@@ -227,6 +227,39 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Надежные цветовые утилиты для секций */
+  .section-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-accent-500;
+  }
+  
+  .section-gradient * {
+    @apply text-white;
+  }
+  
+  .section-gradient h1,
+  .section-gradient h2,
+  .section-gradient h3,
+  .section-gradient h4,
+  .section-gradient h5,
+  .section-gradient h6 {
+    @apply text-white;
+  }
+  
+  .section-gradient p,
+  .section-gradient span,
+  .section-gradient div {
+    @apply text-white;
+  }
+  
+  /* Исключения для кнопок и карточек внутри градиента */
+  .section-gradient .btn,
+  .section-gradient .card,
+  .section-gradient input,
+  .section-gradient select,
+  .section-gradient textarea {
+    @apply text-secondary-900;
+  }
 } 
 
 /* Стили доступности */
