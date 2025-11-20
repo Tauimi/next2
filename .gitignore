@@ -7,6 +7,11 @@ package-lock.json
 # Keep .npmrc for Vercel builds
 # .npmrc should be included in repository
 
+# Temporary files
+*.tsbuildinfo
+*.csv
+*result*.csv
+
 # Testing
 /coverage
 
