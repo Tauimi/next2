@@ -13,81 +13,102 @@ const deliveryMethods = [
     title: 'Курьерская доставка',
     description: 'Доставка курьером до двери',
     areas: 'Москва и область',
-    time: 'В день заказа или на следующий день',
-    price: 'От 300₽, бесплатно от 5,000₽',
+    time: '1-2 дня',
+    price: '1,000₽, бесплатно от 50,000₽',
     features: ['Примерка перед покупкой', 'Оплата при получении', 'Удобное время доставки']
   },
   {
     icon: MapPin,
     title: 'Самовывоз',
-    description: 'Забрать из пункта выдачи',
+    description: 'Забрать из магазина',
     areas: 'Москва, СПб, Екатеринбург',
-    time: 'Через 2-4 часа после заказа',
+    time: 'Сегодня',
     price: 'Бесплатно',
     features: ['Проверка товара', 'Быстрое получение', 'Удобные пункты выдачи']
   },
   {
-    icon: Clock,
-    title: 'Экспресс-доставка',
-    description: 'Ускоренная доставка в день заказа',
-    areas: 'Москва в пределах МКАД',
-    time: 'В течение 3 часов',
-    price: '999₽',
-    features: ['Максимально быстро', 'Отслеживание курьера', 'SMS уведомления']
+    icon: Truck,
+    title: 'Почта России',
+    description: 'Доставка почтой по всей России',
+    areas: 'Вся Россия',
+    time: '5-7 дней',
+    price: '500₽',
+    features: ['Доставка в любой город', 'Отслеживание отправления', 'Оплата при получении']
+  },
+  {
+    icon: MapPin,
+    title: 'СДЭК / Boxberry',
+    description: 'Пункты выдачи по всей России',
+    areas: 'Вся Россия',
+    time: '2-3 дня',
+    price: '700₽',
+    features: ['Удобные пункты выдачи', 'Быстрая доставка', 'Проверка при получении']
   }
 ]
 
 const paymentMethods = [
   {
+    icon: Shield,
+    title: 'Наличные при получении',
+    description: 'Оплата курьеру или в пункте выдачи',
+    features: ['Оплата после осмотра', 'Нет предоплаты', 'Максимальная безопасность']
+  },
+  {
     icon: CreditCard,
-    title: 'Банковские карты',
-    description: 'Visa, MasterCard, МИР',
-    features: ['Безопасные платежи', 'Мгновенное зачисление', '3D-Secure защита']
+    title: 'Картой курьеру',
+    description: 'Оплата картой при получении',
+    features: ['Безопасные платежи', 'Без комиссий', 'Удобно и быстро']
+  },
+  {
+    icon: CreditCard,
+    title: 'Онлайн оплата',
+    description: 'Оплата картой на сайте',
+    features: ['Мгновенное зачисление', '3D-Secure защита', 'Visa, MasterCard, МИР']
   },
   {
     icon: Phone,
-    title: 'Электронные кошельки',
-    description: 'ЮMoney, QIWI, WebMoney',
-    features: ['Быстрая оплата', 'Без комиссий', 'Привычные сервисы']
+    title: 'Банковский перевод',
+    description: 'Оплата по реквизитам',
+    features: ['Для юридических лиц', 'Безналичный расчет', 'С НДС']
   },
   {
-    icon: Shield,
-    title: 'При получении',
-    description: 'Наличные или картой курьеру',
-    features: ['Оплата после осмотра', 'Нет предоплаты', 'Максимальная безопасность']
+    icon: Phone,
+    title: 'СБП',
+    description: 'Система быстрых платежей',
+    features: ['Мгновенный перевод', 'Без комиссий', 'Через мобильный банк']
   }
 ]
 
 const deliveryZones = [
   {
-    zone: 'Москва в пределах МКАД',
-    time: 'В день заказа',
-    price: '300₽',
-    freeFrom: '5,000₽'
+    zone: 'Курьерская доставка (Москва и область)',
+    time: '1-2 дня',
+    price: '1,000₽',
+    freeFrom: '50,000₽'
   },
   {
-    zone: 'Московская область',
-    time: '1-2 дня',
+    zone: 'Самовывоз из магазина',
+    time: 'Сегодня',
+    price: 'Бесплатно',
+    freeFrom: '—'
+  },
+  {
+    zone: 'Почта России',
+    time: '5-7 дней',
     price: '500₽',
-    freeFrom: '7,000₽'
+    freeFrom: '—'
   },
   {
-    zone: 'Санкт-Петербург',
-    time: '1-2 дня',
-    price: '400₽',
-    freeFrom: '5,000₽'
+    zone: 'СДЭК (пункты выдачи)',
+    time: '2-3 дня',
+    price: '700₽',
+    freeFrom: '—'
   },
   {
-    zone: 'Крупные города России',
-    time: '2-5 дней',
-    price: 'От 600₽',
-    freeFrom: '10,000₽'
-  },
-  {
-    zone: 'Отдаленные регионы',
-    time: '3-7 дней',
-    price: 'От 800₽',
-    freeFrom: '15,000₽'
+    zone: 'Boxberry (пункты выдачи)',
+    time: '2-3 дня',
+    price: '700₽',
+    freeFrom: '—'
   }
 ]
 
@@ -118,7 +139,7 @@ export default function DeliveryPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {deliveryMethods.map((method, index) => (
               <div key={index} className="bg-muted/50 rounded-xl p-6">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
@@ -206,7 +227,7 @@ export default function DeliveryPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {paymentMethods.map((method, index) => (
               <div key={index} className="text-center">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -240,16 +261,16 @@ export default function DeliveryPage() {
           <div className="max-w-3xl mx-auto space-y-6">
             {[
               {
+                question: 'Когда доставка бесплатная?',
+                answer: 'Бесплатная курьерская доставка действует при заказе от 50,000₽. Самовывоз из магазина всегда бесплатный.'
+              },
+              {
                 question: 'Можно ли изменить способ доставки после оформления заказа?',
                 answer: 'Да, можно изменить способ доставки до момента передачи заказа в службу доставки. Свяжитесь с нами по телефону +7 (800) 123-45-67.'
               },
               {
                 question: 'Что делать, если товар не подошел?',
                 answer: 'Вы можете вернуть товар в течение 14 дней без объяснения причин. При курьерской доставке возможна примерка.'
-              },
-              {
-                question: 'Есть ли ограничения по весу и размеру?',
-                answer: 'Максимальный вес для курьерской доставки - 30 кг. Крупногабаритные товары доставляются отдельно.'
               },
               {
                 question: 'Как отследить заказ?',
@@ -269,8 +290,8 @@ export default function DeliveryPage() {
       <section className="py-16 bg-gradient-to-r from-primary to-accent text-white">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold mb-4">Есть вопросы о доставке?</h2>
-            <p className="text-xl mb-8 opacity-90">
+            <h2 className="text-3xl font-bold mb-4 text-white">Есть вопросы о доставке?</h2>
+            <p className="text-xl mb-8 opacity-90 text-white">
               Свяжитесь с нами, и мы поможем выбрать оптимальный способ доставки
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
