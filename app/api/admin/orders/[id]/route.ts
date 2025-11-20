@@ -83,15 +83,19 @@ export async function PUT(
     const body = await request.json()
     const { status, paymentStatus, trackingNumber, notes } = body
 
+    // Конвертируем статусы в верхний регистр для Prisma
+    const statusUpper = status ? String(status).toUpperCase() : undefined
+    const paymentStatusUpper = paymentStatus ? String(paymentStatus).toUpperCase() : undefined
+
     const order = await prisma.order.update({
       where: { id: params.id },
       data: {
-        status,
-        paymentStatus,
+        status: statusUpper,
+        paymentStatus: paymentStatusUpper,
         trackingNumber,
         notes,
-        shippedAt: status === 'shipped' && !body.shippedAt ? new Date() : undefined,
-        deliveredAt: status === 'delivered' && !body.deliveredAt ? new Date() : undefined,
+        shippedAt: statusUpper === 'SHIPPED' && !body.shippedAt ? new Date() : undefined,
+        deliveredAt: statusUpper === 'DELIVERED' && !body.deliveredAt ? new Date() : undefined,
       },
       include: {
         user: {
