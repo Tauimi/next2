@@ -228,8 +228,8 @@ export default function ServicesPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Заказать услугу</h2>
-              <p className="text-xl opacity-90">
+              <h2 className="text-3xl font-bold mb-4 text-white">Заказать услугу</h2>
+              <p className="text-xl opacity-90 text-white">
                 Оставьте заявку, и мы свяжемся с вами в течение 15 минут
               </p>
             </div>
@@ -267,8 +267,8 @@ export default function ServicesPage() {
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-bold mb-4">Контактная информация</h3>
-                  <div className="space-y-3">
+                  <h3 className="text-xl font-bold mb-4 text-white">Контактная информация</h3>
+                  <div className="space-y-3 text-white">
                     <div className="flex items-center gap-3">
                       <Phone className="w-5 h-5" />
                       <span>+7 (800) 123-45-67</span>
@@ -281,8 +281,8 @@ export default function ServicesPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-bold mb-4">Время отклика</h3>
-                  <ul className="space-y-2">
+                  <h3 className="text-xl font-bold mb-4 text-white">Время отклика</h3>
+                  <ul className="space-y-2 text-white">
                     <li>• Звонок в течение 15 минут</li>
                     <li>• Выезд специалиста в день обращения</li>
                     <li>• Быстрое решение проблем</li>

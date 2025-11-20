@@ -252,8 +252,8 @@ export default function WarrantyPage() {
       <section className="py-16 bg-gradient-to-r from-primary to-accent text-white">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold mb-4">Нужна помощь с гарантией?</h2>
-            <p className="text-xl mb-8 opacity-90">
+            <h2 className="text-3xl font-bold mb-4 text-white">Нужна помощь с гарантией?</h2>
+            <p className="text-xl mb-8 opacity-90 text-white">
               Обратитесь к нашим специалистам для решения любых вопросов
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

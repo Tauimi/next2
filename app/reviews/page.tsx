@@ -309,8 +309,8 @@ export default function ReviewsPage() {
       <section className="py-16 bg-gradient-to-r from-primary to-accent text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-4">Поделитесь своим мнением!</h2>
-            <p className="text-xl mb-8 opacity-90">
+            <h2 className="text-3xl font-bold mb-4 text-white">Поделитесь своим мнением!</h2>
+            <p className="text-xl mb-8 opacity-90 text-white">
               Расскажите другим покупателям о своем опыте использования наших товаров
             </p>
             <Button size="lg" variant="secondary">

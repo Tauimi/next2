@@ -400,10 +400,10 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="max-w-3xl mx-auto"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-white">
               Нужна консультация?
             </h2>
-            <p className="text-xl mb-8 opacity-90">
+            <p className="text-xl mb-8 opacity-90 text-white">
               Наши специалисты помогут выбрать идеальную технику для ваших задач
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
