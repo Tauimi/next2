@@ -12,16 +12,22 @@
 - ✅ `lib/prisma.ts` - заменен any на PrismaClient
 - ✅ `lib/db-utils.ts` - заменен any в safeTransaction
 
+## ✅ Выполнено (продолжение)
+
+### 3. API Routes
+- ✅ `app/api/products/route.ts` - заменены any в where, specifications
+- ✅ `app/api/orders/route.ts` - заменены any в where, transaction, cartItems
+- ✅ `app/api/cart/route.ts` - заменены any в reduce функциях
+- ✅ `app/api/compare/route.ts` - заменены any в groupedSpecs
+- ✅ `app/api/admin/users/route.ts` - заменены any в where
+
 ## 🔄 В процессе
 
-### 3. API Routes (следующий шаг)
-- [ ] `app/api/products/route.ts`
-- [ ] `app/api/orders/route.ts`
-- [ ] `app/api/cart/route.ts`
+### 4. Остальные API Routes
 - [ ] `app/api/wishlist/route.ts`
-- [ ] `app/api/compare/route.ts`
 - [ ] `app/api/profile/route.ts`
-- [ ] `app/api/admin/**/*.ts`
+- [ ] `app/api/admin/products/route.ts`
+- [ ] `app/api/admin/orders/route.ts`
 
 ### 4. Components
 - [ ] `components/ProductCard.tsx`
@@ -99,8 +105,9 @@ const [validationState, setValidationState] = useState<ValidationState>({
 ## 📊 Прогресс
 
 - Создано типов: 50+
-- Исправлено файлов: 3/50+
-- Осталось any: ~45
+- Исправлено файлов: 8/50+
+- Осталось any: ~40
+- Все исправленные файлы: ✅ без ошибок TypeScript
 
 ## Команды для коммита
 

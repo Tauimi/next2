@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserFromRequest } from '@/lib/auth'
+import { Prisma } from '@prisma/client'
+import { ApiResponse, OrderCreateInput } from '@/types/api'
 
 // Указываем что роут должен быть динамическим
 export const dynamic = 'force-dynamic'
@@ -23,12 +25,12 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
 
     // Построение фильтров
-    const where: any = {
+    const where: Prisma.OrderWhereInput = {
       userId: user.id
     }
 
     if (status) {
-      where.status = status
+      where.status = status as Prisma.EnumOrderStatusFilter
     }
 
     // Подсчет общего количества
@@ -178,7 +180,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Подсчет суммы заказа
-    const subtotal = cartItems.reduce((sum: number, item: any) => {
+    interface CartItemWithPrice {
+      product: { price: number }
+      quantity: number
+    }
+    
+    const subtotal = cartItems.reduce((sum: number, item: CartItemWithPrice) => {
       return sum + (item.product.price * item.quantity)
     }, 0)
 
@@ -224,7 +231,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Создание заказа в транзакции
-    const order = await prisma.$transaction(async (tx: any) => {
+    const order = await prisma.$transaction(async (tx) => {
       // Создаем заказ
       const newOrder = await tx.order.create({
         data: {
@@ -249,8 +256,17 @@ export async function POST(request: NextRequest) {
       })
 
       // Создаем элементы заказа
+      interface CartItemForOrder {
+        productId: string
+        quantity: number
+        product: {
+          price: number
+          stockQuantity: number
+        }
+      }
+      
       const orderItems = await Promise.all(
-        cartItems.map((item: any) =>
+        cartItems.map((item: CartItemForOrder) =>
           tx.orderItem.create({
             data: {
               orderId: newOrder.id,
@@ -265,7 +281,7 @@ export async function POST(request: NextRequest) {
 
       // Обновляем количество товаров на складе
       await Promise.all(
-        cartItems.map((item: any) =>
+        cartItems.map((item: CartItemForOrder) =>
           tx.product.update({
             where: { id: item.productId },
             data: {

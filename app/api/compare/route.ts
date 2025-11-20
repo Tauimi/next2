@@ -46,16 +46,34 @@ export async function GET(request: NextRequest) {
     })
 
     // Группируем характеристики для удобства сравнения
-    const groupedSpecs: Record<string, any[]> = {}
+    interface GroupedSpec {
+      name: string
+      unit?: string | null
+      values: Record<string, string>
+    }
     
-    compareItems.forEach((item: any) => {
-      item.product.specifications.forEach((spec: any) => {
+    interface CompareItemWithSpecs {
+      productId: string
+      product: {
+        specifications: Array<{
+          name: string
+          value: string
+          unit?: string | null
+          groupName?: string | null
+        }>
+      }
+    }
+    
+    const groupedSpecs: Record<string, GroupedSpec[]> = {}
+    
+    compareItems.forEach((item: CompareItemWithSpecs) => {
+      item.product.specifications.forEach((spec) => {
         const groupName = spec.groupName || 'Основные характеристики'
         if (!groupedSpecs[groupName]) {
           groupedSpecs[groupName] = []
         }
         
-        const existingSpec = groupedSpecs[groupName].find((s: any) => s.name === spec.name)
+        const existingSpec = groupedSpecs[groupName].find((s) => s.name === spec.name)
         if (!existingSpec) {
           groupedSpecs[groupName].push({
             name: spec.name,

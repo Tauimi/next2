@@ -8,6 +8,9 @@ import {
   buildSearchFilters, 
   optimizedProductInclude 
 } from '@/lib/db-utils'
+import { ProductWhereInput } from '@/types/database'
+import { ApiResponse, PaginatedResponse, ProductCreateInput } from '@/types/api'
+import { Prisma } from '@prisma/client'
 
 // Указываем что роут должен быть динамическим
 export const dynamic = 'force-dynamic'
@@ -37,7 +40,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     // Построение фильтров
-    const where: any = {
+    const where: Prisma.ProductWhereInput = {
       isActive: true, // Показываем только активные товары
       ...buildSearchFilters(search)
     }
@@ -200,9 +203,16 @@ export async function POST(request: NextRequest) {
     })
 
     // Создание характеристик товара
+    interface SpecificationInput {
+      name: string
+      value: string
+      unit?: string | null
+      groupName?: string | null
+    }
+    
     if (specifications.length > 0) {
       await prisma.productSpecification.createMany({
-        data: specifications.map((spec: any, index: number) => ({
+        data: specifications.map((spec: SpecificationInput, index: number) => ({
           productId: product.id,
           name: spec.name,
           value: spec.value,
