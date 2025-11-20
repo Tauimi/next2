@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Package, Truck, CreditCard, CheckCircle, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Package, Truck, CreditCard, CheckCircle, AlertCircle, MapPin } from 'lucide-react'
 import { useCartStore } from '@/store/cart'
 import { useAuthStore } from '@/store/auth'
 import { formatPrice } from '@/lib/utils'
@@ -164,7 +164,7 @@ export default function CheckoutPage() {
       setOrderId(result.data.id)
       clearCart()
       localStorage.removeItem('checkout-form') // Очищаем сохраненную форму
-      setCurrentStep(5) // Шаг успеха
+      setCurrentStep(6) // Шаг успеха
       toast.success('Заказ успешно оформлен!')
 
     } catch (err) {
@@ -268,9 +268,10 @@ export default function CheckoutPage() {
 
   const steps = [
     { number: 1, title: 'Контактные данные', icon: Package },
-    { number: 2, title: 'Доставка', icon: Truck },
-    { number: 3, title: 'Оплата', icon: CreditCard },
-    { number: 4, title: 'Подтверждение', icon: CheckCircle },
+    { number: 2, title: 'Адрес доставки', icon: MapPin },
+    { number: 3, title: 'Доставка', icon: Truck },
+    { number: 4, title: 'Оплата', icon: CreditCard },
+    { number: 5, title: 'Подтверждение', icon: CheckCircle },
   ]
 
   if (items.length === 0 && !orderId) {
@@ -591,7 +592,7 @@ export default function CheckoutPage() {
                     Назад
                   </button>
                   <button
-                    onClick={() => setCurrentStep(4)}
+                    onClick={() => setCurrentStep(5)}
                     className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     Далее
@@ -600,8 +601,8 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Шаг 4: Подтверждение */}
-            {currentStep === 4 && (
+            {/* Шаг 5: Подтверждение */}
+            {currentStep === 5 && (
               <div className="bg-white rounded-lg p-6 shadow-sm border">
                 <h2 className="text-xl font-semibold mb-6">Подтверждение заказа</h2>
                 
@@ -661,7 +662,7 @@ export default function CheckoutPage() {
 
                 <div className="flex justify-between mt-6">
                   <button
-                    onClick={() => setCurrentStep(3)}
+                    onClick={() => setCurrentStep(4)}
                     className="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     Назад
@@ -678,8 +679,8 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Шаг 5: Успех */}
-            {currentStep === 5 && orderId && (
+            {/* Шаг 6: Успех */}
+            {currentStep === 6 && orderId && (
               <div className="bg-white rounded-lg p-6 shadow-sm border text-center">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-semibold mb-2">Заказ успешно оформлен!</h2>
@@ -707,7 +708,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Сводка заказа */}
-          {currentStep <= 4 && (
+          {currentStep <= 5 && (
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg p-6 shadow-sm border sticky top-8">
                 <h3 className="text-xl font-semibold mb-4">Ваш заказ</h3>
