@@ -44,17 +44,18 @@ const faqData = [
     category: 'delivery',
     question: 'Какие способы доставки доступны?',
     answer: `Мы предлагаем несколько способов доставки:
-    • Курьерская доставка по Москве и области
-    • Самовывоз из пунктов выдачи
-    • Экспресс-доставка в день заказа
-    • Почтовая доставка по России
+    • Курьерская доставка (1-2 дня) - 1,000₽
+    • Самовывоз из магазина (сегодня) - бесплатно
+    • Почта России (5-7 дней) - 500₽
+    • СДЭК (2-3 дня) - 700₽
+    • Boxberry (2-3 дня) - 700₽
     
     Подробная информация о сроках и стоимости на странице "Доставка и оплата".`
   },
   {
     category: 'delivery',
     question: 'Сколько стоит доставка?',
-    answer: 'Стоимость доставки зависит от региона и веса товара. По Москве от 300₽, по России от 500₽. Бесплатная доставка при заказе от 5,000₽ по Москве и от 10,000₽ по России.'
+    answer: 'Курьерская доставка по Москве и области - 1,000₽ (бесплатно от 50,000₽). Самовывоз - бесплатно. Почта России - 500₽. СДЭК/Boxberry - 700₽.'
   },
   {
     category: 'delivery',
@@ -65,11 +66,11 @@ const faqData = [
     category: 'payment',
     question: 'Какие способы оплаты принимаются?',
     answer: `Мы принимаем различные способы оплаты:
-    • Банковские карты (Visa, MasterCard, МИР)
-    • Электронные кошельки (ЮMoney, QIWI)
     • Наличные при получении
-    • Безналичный расчет для юр. лиц
-    • Рассрочка и кредит`
+    • Картой курьеру
+    • Онлайн оплата картой на сайте
+    • Банковский перевод (для юр. лиц)
+    • СБП (Система быстрых платежей)`
   },
   {
     category: 'payment',
@@ -166,24 +167,24 @@ export default function FAQPage() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="space-y-6">
+            <div className="space-y-4">
               {faqData.map((faq, index) => (
-                <div key={index} className="bg-muted/50 rounded-lg">
-                  <button className="w-full p-6 text-left flex items-center justify-between hover:bg-muted/70 transition-colors rounded-lg">
+                <details key={index} className="group bg-muted/50 rounded-lg overflow-hidden">
+                  <summary className="w-full p-6 cursor-pointer list-none flex items-center justify-between hover:bg-muted/70 transition-colors">
                     <div className="flex items-start gap-4 flex-1">
                       <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                         <HelpCircle className="w-4 h-4 text-primary" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
-                        <div className="text-muted-foreground whitespace-pre-line">
-                          {faq.answer}
-                        </div>
-                      </div>
+                      <h3 className="font-semibold text-lg">{faq.question}</h3>
                     </div>
-                    <ChevronDown className="w-5 h-5 text-muted-foreground ml-4" />
-                  </button>
-                </div>
+                    <ChevronDown className="w-5 h-5 text-muted-foreground ml-4 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="px-6 pb-6 pl-[72px]">
+                    <div className="text-muted-foreground whitespace-pre-line">
+                      {faq.answer}
+                    </div>
+                  </div>
+                </details>
               ))}
             </div>
           </div>
