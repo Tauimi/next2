@@ -24,7 +24,8 @@ export default function RegisterPage() {
     username: false,
     email: false,
     password: false,
-    confirmPassword: false
+    confirmPassword: false,
+    terms: false
   })
   
   const [showPassword, setShowPassword] = useState(false)
@@ -190,62 +191,44 @@ export default function RegisterPage() {
             />
 
             {/* Пароль */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-secondary-700 mb-2">
-                Пароль
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  className="input pl-10 pr-10"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  minLength={8}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              <p className="mt-1 text-xs text-secondary-500">
-                Минимум 8 символов
-              </p>
-            </div>
+            <ValidatedInput
+              label="Пароль"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={(value) => setFormData(prev => ({ ...prev, password: value }))}
+              validationRules={{
+                required: true,
+                minLength: 8,
+                message: 'Пароль должен содержать минимум 8 символов'
+              }}
+              onValidationChange={(result) => 
+                setValidationState(prev => ({ ...prev, password: result.isValid }))
+              }
+            />
 
             {/* Подтверждение пароля */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-secondary-700 mb-2">
-                Подтвердите пароль
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  required
-                  className="input pl-10 pr-10"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
+            <ValidatedInput
+              label="Подтвердите пароль"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={(value) => setFormData(prev => ({ ...prev, confirmPassword: value }))}
+              validationRules={{
+                required: true,
+                minLength: 8,
+                custom: (value) => {
+                  if (value !== formData.password) {
+                    return { isValid: false, error: 'Пароли не совпадают' }
+                  }
+                  return { isValid: true }
+                },
+                message: 'Пароли должны совпадать'
+              }}
+              onValidationChange={(result) => 
+                setValidationState(prev => ({ ...prev, confirmPassword: result.isValid }))
+              }
+            />
 
             {/* Согласие */}
             <div className="flex items-start">
@@ -254,6 +237,7 @@ export default function RegisterPage() {
                 type="checkbox"
                 required
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded mt-1"
+                onChange={(e) => setValidationState(prev => ({ ...prev, terms: e.target.checked }))}
               />
               <label htmlFor="terms" className="ml-3 text-sm text-secondary-700">
                 Я соглашаюсь с{' '}
@@ -270,8 +254,8 @@ export default function RegisterPage() {
             {/* Кнопка регистрации */}
             <button
               type="submit"
-              disabled={loading}
-              className="btn-primary w-full"
+              disabled={loading || !isFormValid}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Регистрация...' : 'Зарегистрироваться'}
             </button>

@@ -5,7 +5,7 @@ export interface ValidationRule {
   minLength?: number
   maxLength?: number
   pattern?: RegExp
-  custom?: (value: string) => boolean
+  custom?: (value: string) => ValidationResult | boolean
   message?: string
 }
 
@@ -176,10 +176,21 @@ export const validateField = (
   }
 
   // Кастомная валидация
-  if (rules.custom && !rules.custom(value)) {
-    return { 
-      isValid: false, 
-      error: rules.message || 'Значение не прошло проверку' 
+  if (rules.custom) {
+    const customResult = rules.custom(value)
+    
+    // Если вернули ValidationResult
+    if (typeof customResult === 'object' && 'isValid' in customResult) {
+      if (!customResult.isValid) {
+        return customResult
+      }
+    }
+    // Если вернули boolean
+    else if (!customResult) {
+      return { 
+        isValid: false, 
+        error: rules.message || 'Значение не прошло проверку' 
+      }
     }
   }
 

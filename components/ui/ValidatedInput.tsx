@@ -52,10 +52,8 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
         onChange(newValue)
       }
 
-      // Валидируем только если поле уже было touched
-      if (touched) {
-        validate(newValue)
-      }
+      // Валидируем сразу при вводе
+      validate(newValue)
     }
 
     const handleBlur = () => {
@@ -67,7 +65,10 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
 
     useEffect(() => {
       if (props.value !== undefined) {
-        setValue(props.value.toString())
+        const newValue = props.value.toString()
+        setValue(newValue)
+        // Валидируем при изменении value извне
+        validate(newValue)
       }
     }, [props.value])
 
