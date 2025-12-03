@@ -63,14 +63,19 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
       }
     }
 
+    // Синхронизируем value с props.value
     useEffect(() => {
-      if (props.value !== undefined) {
-        const newValue = props.value.toString()
-        setValue(newValue)
-        // Валидируем при изменении value извне
-        validate(newValue)
+      if (props.value !== undefined && props.value.toString() !== value) {
+        setValue(props.value.toString())
       }
     }, [props.value])
+    
+    // Валидируем при монтировании если есть начальное значение
+    useEffect(() => {
+      if (value && validationRules) {
+        validate(value)
+      }
+    }, [])
 
     return (
       <div className="w-full">

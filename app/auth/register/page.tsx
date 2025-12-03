@@ -37,6 +37,10 @@ export default function RegisterPage() {
   const { login } = useAuthStore()
   
   const isFormValid = Object.values(validationState).every(v => v)
+  
+  // Отладка
+  console.log('Validation state:', validationState)
+  console.log('Is form valid:', isFormValid)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
