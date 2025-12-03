@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
-import { ValidatedInput } from '@/components/ui/ValidatedInput'
-import { validateEmail, validateName } from '@/lib/validation'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -18,35 +16,32 @@ export default function RegisterPage() {
     confirmPassword: ''
   })
   
-  const [validationState, setValidationState] = useState({
-    firstName: false,
-    lastName: false,
-    username: false,
-    email: false,
-    password: false,
-    confirmPassword: false,
-    terms: false
-  })
-  
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(false)
   
   const router = useRouter()
   const { login } = useAuthStore()
-  
-  const isFormValid = Object.values(validationState).every(v => v)
-  
-  // Отладка
-  console.log('Validation state:', validationState)
-  console.log('Is form valid:', isFormValid)
+
+  // Простая валидация
+  const validateForm = () => {
+    if (formData.firstName.trim().length < 2) return false
+    if (formData.lastName.trim().length < 2) return false
+    if (formData.username.trim().length < 3) return false
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return false
+    if (formData.password.length < 8) return false
+    if (formData.password !== formData.confirmPassword) return false
+    if (!termsAccepted) return false
+    return true
+  }
+
+  const isFormValid = validateForm()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,13 +54,6 @@ export default function RegisterPage() {
     
     setLoading(true)
     setError('')
-
-    // Проверка пароля
-    if (formData.password !== formData.confirmPassword) {
-      setError('Пароли не совпадают')
-      setLoading(false)
-      return
-    }
 
     try {
       const response = await fetch('/api/auth/register', {
@@ -83,10 +71,7 @@ export default function RegisterPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        // Успешная регистрация - автоматически входим в систему
         login(data.user, data.token)
-        
-        // Перенаправляем на главную или профиль
         router.push('/')
       } else {
         setError(data.error || 'Ошибка регистрации')
@@ -102,20 +87,13 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-secondary-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Заголовок */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-secondary-900">
-            Регистрация
-          </h1>
-          <p className="mt-2 text-secondary-600">
-            Создайте новый аккаунт TechnoMart
-          </p>
+          <h1 className="text-3xl font-bold text-secondary-900">Регистрация</h1>
+          <p className="mt-2 text-secondary-600">Создайте новый аккаунт TechnoMart</p>
         </div>
 
-        {/* Форма */}
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Ошибка */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-sm text-red-700">{error}</p>
@@ -124,125 +102,138 @@ export default function RegisterPage() {
 
             {/* Имя и Фамилия */}
             <div className="grid grid-cols-2 gap-4">
-              <ValidatedInput
-                label="Имя"
-                placeholder="Имя"
-                value={formData.firstName}
-                onChange={(value) => setFormData(prev => ({ ...prev, firstName: value }))}
-                validationRules={{
-                  required: true,
-                  minLength: 2,
-                  maxLength: 50,
-                  pattern: /^[а-яА-ЯёЁa-zA-Z\s\-]+$/,
-                  message: 'Имя должно содержать только буквы (минимум 2 символа)'
-                }}
-                onValidationChange={(result) => 
-                  setValidationState(prev => ({ ...prev, firstName: result.isValid }))
-                }
-              />
-
-              <ValidatedInput
-                label="Фамилия"
-                placeholder="Фамилия"
-                value={formData.lastName}
-                onChange={(value) => setFormData(prev => ({ ...prev, lastName: value }))}
-                validationRules={{
-                  required: true,
-                  minLength: 2,
-                  maxLength: 50,
-                  pattern: /^[а-яА-ЯёЁa-zA-Z\s\-]+$/,
-                  message: 'Фамилия должна содержать только буквы (минимум 2 символа)'
-                }}
-                onValidationChange={(result) => 
-                  setValidationState(prev => ({ ...prev, lastName: result.isValid }))
-                }
-              />
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Имя <span className="text-red-500">*</span>
+                </label>
+                <input
+                  name="firstName"
+                  type="text"
+                  required
+                  className="input w-full"
+                  placeholder="Имя"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  minLength={2}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Фамилия <span className="text-red-500">*</span>
+                </label>
+                <input
+                  name="lastName"
+                  type="text"
+                  required
+                  className="input w-full"
+                  placeholder="Фамилия"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  minLength={2}
+                />
+              </div>
             </div>
 
             {/* Username */}
-            <ValidatedInput
-              label="Логин"
-              placeholder="username"
-              value={formData.username}
-              onChange={(value) => setFormData(prev => ({ ...prev, username: value }))}
-              validationRules={{
-                required: true,
-                minLength: 3,
-                maxLength: 20,
-                pattern: /^[a-zA-Z0-9_]+$/,
-                message: 'Логин должен содержать только латинские буквы, цифры и _ (минимум 3 символа)'
-              }}
-              onValidationChange={(result) => 
-                setValidationState(prev => ({ ...prev, username: result.isValid }))
-              }
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Логин <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="username"
+                type="text"
+                required
+                className="input w-full"
+                placeholder="username"
+                value={formData.username}
+                onChange={handleChange}
+                minLength={3}
+                pattern="^[a-zA-Z0-9_]+$"
+              />
+              <p className="mt-1 text-xs text-secondary-500">
+                Только латинские буквы, цифры и _
+              </p>
+            </div>
 
             {/* Email */}
-            <ValidatedInput
-              label="Email адрес"
-              type="email"
-              placeholder="your@email.com"
-              value={formData.email}
-              onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
-              validationRules={{
-                required: true,
-                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Введите корректный email адрес'
-              }}
-              onValidationChange={(result) => 
-                setValidationState(prev => ({ ...prev, email: result.isValid }))
-              }
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="email"
+                type="email"
+                required
+                className="input w-full"
+                placeholder="your@email.com"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
 
             {/* Пароль */}
-            <ValidatedInput
-              label="Пароль"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={(value) => {
-                setFormData(prev => ({ ...prev, password: value }))
-                // Обновляем валидацию confirmPassword при изменении password
-                const passwordsMatch = formData.confirmPassword === value && formData.confirmPassword.length >= 8
-                setValidationState(prev => ({ ...prev, confirmPassword: passwordsMatch }))
-              }}
-              validationRules={{
-                required: true,
-                minLength: 8,
-                message: 'Пароль должен содержать минимум 8 символов'
-              }}
-              onValidationChange={(result) => 
-                setValidationState(prev => ({ ...prev, password: result.isValid }))
-              }
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Пароль <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="input w-full pr-10"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-secondary-500">Минимум 8 символов</p>
+            </div>
 
             {/* Подтверждение пароля */}
-            <ValidatedInput
-              label="Подтвердите пароль"
-              type={showConfirmPassword ? 'text' : 'password'}
-              placeholder="••••••••"
-              value={formData.confirmPassword}
-              onChange={(value) => {
-                setFormData(prev => ({ ...prev, confirmPassword: value }))
-                // Проверяем совпадение паролей
-                const passwordsMatch = value === formData.password && value.length >= 8
-                setValidationState(prev => ({ ...prev, confirmPassword: passwordsMatch }))
-              }}
-              validationRules={{
-                required: true,
-                minLength: 8,
-                message: 'Пароль должен содержать минимум 8 символов'
-              }}
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Подтвердите пароль <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  className="input w-full pr-10"
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                <p className="mt-1 text-xs text-red-500">Пароли не совпадают</p>
+              )}
+            </div>
 
             {/* Согласие */}
             <div className="flex items-start">
               <input
                 id="terms"
                 type="checkbox"
-                required
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded mt-1"
-                onChange={(e) => setValidationState(prev => ({ ...prev, terms: e.target.checked }))}
               />
               <label htmlFor="terms" className="ml-3 text-sm text-secondary-700">
                 Я соглашаюсь с{' '}
@@ -287,7 +278,6 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Возврат на главную */}
         <div className="text-center">
           <Link href="/" className="text-sm text-secondary-500 hover:text-secondary-700">
             ← Вернуться на главную
@@ -296,4 +286,4 @@ export default function RegisterPage() {
       </div>
     </div>
   )
-} 
+}

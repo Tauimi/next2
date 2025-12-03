@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
+import { Eye, EyeOff, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
-import { ValidatedInput } from '@/components/ui/ValidatedInput'
-import { validateEmail, validatePassword } from '@/lib/validation'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -16,21 +14,18 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [validationState, setValidationState] = useState({
-    email: false,
-    password: false
-  })
   
   const router = useRouter()
   const { login } = useAuthStore()
-  
-  const isFormValid = validationState.email && validationState.password
+
+  // Простая валидация
+  const isFormValid = 
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && 
+    formData.password.length >= 1
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,8 +43,6 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        // Успешный вход - используем auth store
-        // API теперь возвращает data.user и data.token напрямую
         const user = data.user || data.data?.user
         const token = data.token || data.data?.token
         
@@ -109,20 +102,13 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-secondary-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Заголовок */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-secondary-900">
-            Вход в аккаунт
-          </h1>
-          <p className="mt-2 text-secondary-600">
-            Войдите в свой аккаунт TechnoMart
-          </p>
+          <h1 className="text-3xl font-bold text-secondary-900">Вход в аккаунт</h1>
+          <p className="mt-2 text-secondary-600">Войдите в свой аккаунт TechnoMart</p>
         </div>
 
-        {/* Форма */}
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Ошибка */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-sm text-red-700">{error}</p>
@@ -130,42 +116,36 @@ export default function LoginPage() {
             )}
 
             {/* Email */}
-            <ValidatedInput
-              label="Email адрес"
-              type="email"
-              placeholder="your@email.com"
-              value={formData.email}
-              onChange={(value) => setFormData({ ...formData, email: value })}
-              validationRules={{
-                required: true,
-                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Введите корректный email адрес'
-              }}
-              onValidationChange={(result) => 
-                setValidationState(prev => ({ ...prev, email: result.isValid }))
-              }
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="email"
+                type="email"
+                required
+                className="input w-full"
+                placeholder="your@email.com"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
 
             {/* Пароль */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-secondary-700 mb-2">
-                Пароль *
+              <label className="block text-sm font-medium mb-2">
+                Пароль <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-400" />
                 <input
-                  id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="input pl-10 pr-10"
+                  className="input w-full pl-10 pr-10"
                   placeholder="••••••••"
                   value={formData.password}
-                  onChange={(e) => {
-                    handleChange(e)
-                    const result = validatePassword(e.target.value)
-                    setValidationState(prev => ({ ...prev, password: result.isValid }))
-                  }}
+                  onChange={handleChange}
                 />
                 <button
                   type="button"
@@ -206,7 +186,6 @@ export default function LoginPage() {
 
           {/* Тестовые аккаунты */}
           <div className="mt-6 space-y-4">
-            {/* Администратор */}
             <div className="p-4 bg-blue-50 rounded-lg">
               <h3 className="text-sm font-medium text-blue-900 mb-2">Тестовый вход (Администратор):</h3>
               <div className="text-sm text-blue-700 space-y-1 mb-3">
@@ -223,7 +202,6 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* Пользователь */}
             <div className="p-4 bg-green-50 rounded-lg">
               <h3 className="text-sm font-medium text-green-900 mb-2">Тестовый вход (Пользователь):</h3>
               <div className="text-sm text-green-700 space-y-1 mb-3">
@@ -252,7 +230,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Возврат на главную */}
         <div className="text-center">
           <Link href="/" className="text-sm text-secondary-500 hover:text-secondary-700">
             ← Вернуться на главную
@@ -261,4 +238,4 @@ export default function LoginPage() {
       </div>
     </div>
   )
-} 
+}

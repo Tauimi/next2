@@ -1,17 +1,55 @@
 'use client'
 
-import { InputHTMLAttributes, forwardRef, useState, useEffect } from 'react'
+import { InputHTMLAttributes, forwardRef, useState } from 'react'
 import { cn } from '@/lib/utils'
-import { ValidationResult, validateField, ValidationRule } from '@/lib/validation'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Check } from 'lucide-react'
+
+export interface ValidationRule {
+  required?: boolean
+  minLength?: number
+  maxLength?: number
+  pattern?: RegExp
+  message?: string
+}
 
 export interface ValidatedInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label?: string
   error?: string
   validationRules?: ValidationRule
-  onValidationChange?: (result: ValidationResult) => void
+  onValidationChange?: (isValid: boolean) => void
   onChange?: (value: string) => void
-  showErrorOnBlur?: boolean
+  showSuccessIcon?: boolean
+}
+
+function validateValue(value: string, rules?: ValidationRule): { isValid: boolean; error?: string } {
+  if (!rules) return { isValid: true }
+
+  // Проверка обязательности
+  if (rules.required && (!value || value.trim() === '')) {
+    return { isValid: false, error: rules.message || 'Это поле обязательно' }
+  }
+
+  // Если не обязательное и пустое - валидно
+  if (!rules.required && (!value || value.trim() === '')) {
+    return { isValid: true }
+  }
+
+  // Проверка минимальной длины
+  if (rules.minLength && value.trim().length < rules.minLength) {
+    return { isValid: false, error: rules.message || `Минимум ${rules.minLength} символов` }
+  }
+
+  // Проверка максимальной длины
+  if (rules.maxLength && value.trim().length > rules.maxLength) {
+    return { isValid: false, error: rules.message || `Максимум ${rules.maxLength} символов` }
+  }
+
+  // Проверка паттерна
+  if (rules.pattern && !rules.pattern.test(value)) {
+    return { isValid: false, error: rules.message || 'Неверный формат' }
+  }
+
+  return { isValid: true }
 }
 
 const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
@@ -22,60 +60,46 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
     validationRules,
     onValidationChange,
     onChange,
-    showErrorOnBlur = true,
+    showSuccessIcon = false,
+    value: propValue,
     ...props 
   }, ref) => {
-    const [internalError, setInternalError] = useState<string>()
     const [touched, setTouched] = useState(false)
-    const [value, setValue] = useState(props.value?.toString() || '')
+    const [internalValue, setInternalValue] = useState(propValue?.toString() || '')
+    const [validationError, setValidationError] = useState<string>()
 
-    const error = externalError || (touched && internalError)
-
-    const validate = (val: string) => {
-      if (!validationRules) return { isValid: true }
-
-      const result = validateField(val, validationRules)
-      setInternalError(result.error)
-      
-      if (onValidationChange) {
-        onValidationChange(result)
-      }
-
-      return result
-    }
+    const value = propValue !== undefined ? propValue.toString() : internalValue
+    const showError = touched && (externalError || validationError)
+    const isValid = touched && !externalError && !validationError && value.length > 0
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value
-      setValue(newValue)
+      setInternalValue(newValue)
+      
+      // Валидируем
+      const result = validateValue(newValue, validationRules)
+      setValidationError(result.error)
+      
+      // Уведомляем родителя
+      if (onValidationChange) {
+        onValidationChange(result.isValid)
+      }
       
       if (onChange) {
         onChange(newValue)
       }
-
-      // Валидируем сразу при вводе
-      validate(newValue)
     }
 
     const handleBlur = () => {
       setTouched(true)
-      if (showErrorOnBlur) {
-        validate(value)
+      // Валидируем при потере фокуса
+      const result = validateValue(value, validationRules)
+      setValidationError(result.error)
+      
+      if (onValidationChange) {
+        onValidationChange(result.isValid)
       }
     }
-
-    // Синхронизируем value с props.value
-    useEffect(() => {
-      if (props.value !== undefined && props.value.toString() !== value) {
-        setValue(props.value.toString())
-      }
-    }, [props.value])
-    
-    // Валидируем при монтировании
-    useEffect(() => {
-      if (validationRules) {
-        validate(value)
-      }
-    }, [])
 
     return (
       <div className="w-full">
@@ -94,9 +118,11 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
               'focus:outline-none focus:ring-2 focus:ring-offset-0',
               'disabled:cursor-not-allowed disabled:opacity-50',
               'transition-colors',
-              error 
+              showError 
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
-                : 'border-secondary-300 focus:border-primary-500 focus:ring-primary-500/20',
+                : isValid && showSuccessIcon
+                  ? 'border-green-500 focus:border-green-500 focus:ring-green-500/20'
+                  : 'border-secondary-300 focus:border-primary-500 focus:ring-primary-500/20',
               className
             )}
             value={value}
@@ -104,13 +130,16 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
             onBlur={handleBlur}
             {...props}
           />
-          {error && (
+          {showError && (
             <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500" />
           )}
+          {isValid && showSuccessIcon && !showError && (
+            <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+          )}
         </div>
-        {error && (
-          <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-            {error}
+        {showError && (
+          <p className="mt-1 text-sm text-red-500">
+            {externalError || validationError}
           </p>
         )}
       </div>
@@ -120,4 +149,4 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
 
 ValidatedInput.displayName = 'ValidatedInput'
 
-export { ValidatedInput }
+export { ValidatedInput, validateValue }
