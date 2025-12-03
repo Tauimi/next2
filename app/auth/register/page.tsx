@@ -200,7 +200,12 @@ export default function RegisterPage() {
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               value={formData.password}
-              onChange={(value) => setFormData(prev => ({ ...prev, password: value }))}
+              onChange={(value) => {
+                setFormData(prev => ({ ...prev, password: value }))
+                // Обновляем валидацию confirmPassword при изменении password
+                const passwordsMatch = formData.confirmPassword === value && formData.confirmPassword.length >= 8
+                setValidationState(prev => ({ ...prev, confirmPassword: passwordsMatch }))
+              }}
               validationRules={{
                 required: true,
                 minLength: 8,
@@ -217,21 +222,17 @@ export default function RegisterPage() {
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="••••••••"
               value={formData.confirmPassword}
-              onChange={(value) => setFormData(prev => ({ ...prev, confirmPassword: value }))}
+              onChange={(value) => {
+                setFormData(prev => ({ ...prev, confirmPassword: value }))
+                // Проверяем совпадение паролей
+                const passwordsMatch = value === formData.password && value.length >= 8
+                setValidationState(prev => ({ ...prev, confirmPassword: passwordsMatch }))
+              }}
               validationRules={{
                 required: true,
                 minLength: 8,
-                custom: (value) => {
-                  if (value !== formData.password) {
-                    return { isValid: false, error: 'Пароли не совпадают' }
-                  }
-                  return { isValid: true }
-                },
-                message: 'Пароли должны совпадать'
+                message: 'Пароль должен содержать минимум 8 символов'
               }}
-              onValidationChange={(result) => 
-                setValidationState(prev => ({ ...prev, confirmPassword: result.isValid }))
-              }
             />
 
             {/* Согласие */}
