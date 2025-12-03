@@ -70,9 +70,9 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
       }
     }, [props.value])
     
-    // Валидируем при монтировании если есть начальное значение
+    // Валидируем при монтировании
     useEffect(() => {
-      if (value && validationRules) {
+      if (validationRules) {
         validate(value)
       }
     }, [])
