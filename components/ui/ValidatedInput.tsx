@@ -2,26 +2,19 @@
 
 import { InputHTMLAttributes, forwardRef, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { ValidationResult, ValidationRule } from '@/lib/validation'
 import { AlertCircle, Check } from 'lucide-react'
-
-export interface ValidationRule {
-  required?: boolean
-  minLength?: number
-  maxLength?: number
-  pattern?: RegExp
-  message?: string
-}
 
 export interface ValidatedInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label?: string
   error?: string
   validationRules?: ValidationRule
-  onValidationChange?: (isValid: boolean) => void
+  onValidationChange?: (result: ValidationResult) => void
   onChange?: (value: string) => void
   showSuccessIcon?: boolean
 }
 
-function validateValue(value: string, rules?: ValidationRule): { isValid: boolean; error?: string } {
+function validateValue(value: string, rules?: ValidationRule): ValidationResult {
   if (!rules) return { isValid: true }
 
   // Проверка обязательности
@@ -47,6 +40,18 @@ function validateValue(value: string, rules?: ValidationRule): { isValid: boolea
   // Проверка паттерна
   if (rules.pattern && !rules.pattern.test(value)) {
     return { isValid: false, error: rules.message || 'Неверный формат' }
+  }
+
+  // Кастомная валидация
+  if (rules.custom) {
+    const customResult = rules.custom(value)
+    if (typeof customResult === 'object' && 'isValid' in customResult) {
+      if (!customResult.isValid) {
+        return customResult
+      }
+    } else if (!customResult) {
+      return { isValid: false, error: rules.message || 'Значение не прошло проверку' }
+    }
   }
 
   return { isValid: true }
@@ -82,7 +87,7 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
       
       // Уведомляем родителя
       if (onValidationChange) {
-        onValidationChange(result.isValid)
+        onValidationChange(result)
       }
       
       if (onChange) {
@@ -97,7 +102,7 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
       setValidationError(result.error)
       
       if (onValidationChange) {
-        onValidationChange(result.isValid)
+        onValidationChange(result)
       }
     }
 
